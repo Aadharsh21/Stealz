@@ -3,6 +3,7 @@
 import type { DealScore, HistoryPoint, HistoryResponse, Offer } from './types';
 import { formatMoney, round2 } from './money';
 import { cheapestOf, effectiveTotal } from './scoring';
+import { luxuryFloorWarning } from './luxury';
 import { isKnownRetailer } from './stores';
 
 export function median(values: number[]): number | null {
@@ -92,6 +93,16 @@ export function markPriceOutliers<T extends Offer>(offers: T[], reference: Offer
       priceWarning: `${below}% below the usual ${formatMoney(typical, o.currency)}. It could be a fake, a used item or a different product, so check the seller first.`,
       tags: o.tags.includes('Check this price') ? o.tags : [...o.tags, 'Check this price'],
     };
+  });
+}
+
+/** Flags luxury bags priced below anything the brand sells new (see lib/luxury.ts). */
+export function markLuxuryFloors<T extends Offer & { brand?: string }>(offers: T[]): T[] {
+  return offers.map((o) => {
+    if (o.priceWarning) return o;
+    const warning = luxuryFloorWarning(o.title, o.price, o.currency, o.brand);
+    if (!warning) return o;
+    return { ...o, priceWarning: warning, tags: o.tags.includes('Check this price') ? o.tags : [...o.tags, 'Check this price'] };
   });
 }
 

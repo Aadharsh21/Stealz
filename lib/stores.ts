@@ -66,8 +66,20 @@ const NON_RETAIL =
 /** Country domains a shopper in each country commonly buys from. */
 const OK_COUNTRY_DOMAINS = ['uk', 'us', 'ca', 'au', 'io', 'co'];
 
+/** Rental services, matched by exact name. */
+const RENTAL_STORES = ['pickle', 'shoppickle', 'renttherunway', 'nuuly', 'armoire'];
+
+/** Listings that aren't the item itself: authentication guides, packaging, paper bags. */
+const NOT_AN_ITEM =
+  /\b(e-?book|guide series|buying guide|how to (identify|spot|authenticate|tell)|authentication (service|guide|certificate)|paper (shopping )?bags?|gift bags?|carrier bags?|dust ?bag only|box only|empty box|vol\.\s?\d+)\b/i;
+
+export function isNotAnItem(title: string): boolean {
+  return NOT_AN_ITEM.test(title);
+}
+
 export function isResaleStore(store: string, domain?: string): boolean {
   const s = squash(store);
+  if (RENTAL_STORES.includes(s)) return true;
   const d = domain ? squash(domain) : '';
   return RESALE_STORES.some((r) => s.includes(r) || (d && d.includes(r)));
 }

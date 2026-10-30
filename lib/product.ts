@@ -5,7 +5,7 @@ import type { Listing, Offer, ProductDetails, ProductRef, ProductResponse, Resol
 import { COUNTRIES } from './countries';
 import { config, dataMode, ebayEnabled, emailEnabled, googleEnabled, hasDatabase } from './config';
 import { cacheGet, cacheSet } from './cache';
-import { computeDealScore, markInflatedDiscounts, markPriceOutliers, summarizeHistory } from './deal';
+import { computeDealScore, markInflatedDiscounts, markLuxuryFloors, markPriceOutliers, summarizeHistory } from './deal';
 import { AppError } from './errors';
 import { getHistory, recordSnapshots, snapshotRows } from './history';
 import { takeLiveCredit } from './limits';
@@ -15,6 +15,7 @@ import { demoHistory, demoProduct } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { googleProduct } from './providers/serpapi';
 import { ProviderError } from './providers/types';
+import { isNotAnItem } from './stores';
 import type { ProviderItem, ProviderProductResult } from './providers/types';
 import { cheapestOf, effectiveTotal, isFlagged } from './scoring';
 import { checkVisitorLimit, getSearchItems } from './search';
@@ -108,7 +109,7 @@ export function offersFromItems(items: ProviderItem[], loc: ResolvedLocation, no
   const base = offerContext(loc, now);
   const byStore = new Map<string, Offer>();
   for (const item of items) {
-    if (!(item.price > 0) || isUsedItem(item)) continue;
+    if (!(item.price > 0) || isUsedItem(item) || isNotAnItem(item.title)) continue;
     const offer = itemToOffer(item, base, loc.timeZone);
     const key = normalize(offer.store);
     const prev = byStore.get(key);
@@ -138,7 +139,7 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
   const loc = await resolveLocation(input.location, input.tz);
   const raw = await getProductItems(ref, loc, input.ip, input.fresh);
 
-  let offers = markPriceOutliers(offersFromItems(raw.items, loc, now));
+  let offers = markPriceOutliers(markLuxuryFloors(offersFromItems(raw.items, loc, now)));
   if (offers.length === 0) {
     throw new AppError('No stores have this item new right now. Try searching again.', 404, 'not_found');
   }

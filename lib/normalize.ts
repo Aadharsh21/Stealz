@@ -10,9 +10,9 @@ import {
 import { finalizeOffer } from './offer';
 import type { OfferContext } from './offer';
 import { encodeRef } from './ref';
-import { markPriceOutliers } from './deal';
+import { markLuxuryFloors, markPriceOutliers } from './deal';
 import { cheapestOf, explainPick, fastestOf, rankOffers } from './scoring';
-import { isResaleStore, looksUsed } from './stores';
+import { isNotAnItem, isResaleStore, looksUsed } from './stores';
 import { exactTax } from './tax';
 import { CLOSE_MATCH, detectBrand, jaccard, keyTokens, matchScore, productKey, truncate } from './text';
 
@@ -79,7 +79,7 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
   const seen = new Set<string>();
   let hiddenUsed = 0;
   for (const item of items) {
-    if (!item.title || !(item.price > 0)) continue;
+    if (!item.title || !(item.price > 0) || isNotAnItem(item.title)) continue;
     if (isUsedItem(item)) {
       hiddenUsed += 1;
       continue;
@@ -175,7 +175,8 @@ export function groupListings(listings: Listing[]): ProductGroup[] {
  * Flags close matches priced far below the others. Skipped for broad searches (like "black
  * tote") where close matches are many different products at very different prices.
  */
-export function flagSuspiciousListings(listings: Listing[]): Listing[] {
+export function flagSuspiciousListings(input: Listing[]): Listing[] {
+  const listings = markLuxuryFloors(input);
   const close = listings.filter((l) => l.match >= CLOSE_MATCH);
   if (close.length < 5) return listings;
   const prices = close.map((l) => l.price).sort((a, b) => a - b);

@@ -106,7 +106,7 @@ const BRANDS = [
   'Nike', 'Jordan', 'Adidas', 'Puma', 'New Balance', 'Converse', 'Vans', 'Under Armour', 'Lululemon',
   'The North Face', 'Patagonia', 'Columbia', "Arc'teryx", 'Carhartt', 'Champion', 'Reebok', 'Asics', 'Hoka',
   'Salomon', 'On Running', 'Skechers', 'Crocs', 'Birkenstock', 'Dr. Martens', 'UGG', 'Timberland', 'Clarks',
-  'Ray-Ban', 'Oakley', 'Persol', 'Prada', 'Miu Miu', 'Gucci', 'Louis Vuitton', 'Saint Laurent', 'YSL',
+  'Ray-Ban', 'Oakley', 'Persol', 'Chanel', 'Hermès', 'Goyard', 'The Row', 'Prada', 'Miu Miu', 'Gucci', 'Louis Vuitton', 'Saint Laurent', 'YSL',
   'Balenciaga', 'Bottega Veneta', 'Burberry', 'Fendi', 'Dior', 'Christian Dior', 'Celine', 'Loewe',
   'Valentino', 'Givenchy', 'Versace', 'Dolce & Gabbana', 'Chloé', 'Jacquemus', 'Mulberry', 'Moncler',
   'Canada Goose', 'Stone Island', 'Off-White', 'Golden Goose', 'Alexander McQueen', 'Jimmy Choo',

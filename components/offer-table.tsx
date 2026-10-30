@@ -56,7 +56,7 @@ function GoButton({ o, compact = false }: { o: Offer; compact?: boolean }) {
       href={o.link}
       target="_blank"
       rel="noopener noreferrer nofollow"
-      className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-ink font-semibold text-paper hover:bg-ink-soft ${
+      className={`inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink font-semibold text-paper hover:bg-ink-soft ${
         compact ? 'h-9 px-3.5 text-[13px]' : 'h-9 px-4 text-[13px]'
       }`}
       aria-label={`Go to ${o.store} (opens in a new tab)`}

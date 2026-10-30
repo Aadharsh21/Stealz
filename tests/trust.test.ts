@@ -62,3 +62,20 @@ test('estimated tax is added on top of a provider total that leaves it out', () 
   assert.equal(withShipping.shipping.cost, 48);
   assert.equal(withShipping.total, 563.57);
 });
+
+test('luxury bags far below the brand price are flagged; guides and rentals are dropped', async () => {
+  const { luxuryFloorWarning } = await import('../lib/luxury');
+  const { isNotAnItem, isResaleStore } = await import('../lib/stores');
+  assert.ok(luxuryFloorWarning('Chanel Mini 22 Lady Bag 245', 132.96, 'USD'));
+  assert.equal(luxuryFloorWarning('Chanel Black Caviar Wallet on Chain', 4360.94, 'USD'), null);
+  assert.ok(luxuryFloorWarning('Louis Vuitton Neverfull MM Tote', 210, 'USD'));
+  assert.equal(luxuryFloorWarning('Louis Vuitton Neverfull MM Tote', 2100, 'USD'), null);
+  assert.equal(luxuryFloorWarning('Coach Tabby Shoulder Bag 26', 120, 'USD'), null);
+  assert.ok(luxuryFloorWarning('Gucci GG Marmont Shoulder Bag', 9000, 'INR'));
+  assert.equal(luxuryFloorWarning('Gucci Sunglasses GG0061S', 150, 'USD'), null);
+  assert.equal(isNotAnItem('DJR Expert Guide Series, Vol. 2542 - How to Identify Authentic Chanel Bags'), true);
+  assert.equal(isNotAnItem('Dior Book Tote Medium'), false);
+  assert.equal(isNotAnItem('Chanel Classic Flap Bag with Dust Bag and Box'), false);
+  assert.equal(isResaleStore('Pickle'), true);
+  assert.equal(isResaleStore('Nordstrom'), false);
+});
