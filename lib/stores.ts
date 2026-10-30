@@ -21,7 +21,7 @@ const RESALE_STORES = [
 const MARKETPLACE_PATTERNS = [
   /\bebay\b/, /\s-\s?seller\b/, /\bmarketplace\b/, /\betsy\b/, /\bmeesho\b/, /\bsnapdeal\b/,
   /\baliexpress\b/, /\bdhgate\b/, /\btemu\b/, /\bwish\b/, /\bshein marketplace\b/, /\bwalmart seller\b/,
-  /\bamazon\b.*\bseller\b/, /\bnoon\b.*\bseller\b/,
+  /\bamazon\b.*\bseller\b/, /\bnoon\b.*\bseller\b/, /\bshop app\b/,
 ];
 
 /** Sellers known for very cheap unbranded copies; listed so shoppers see a warning. */
@@ -40,7 +40,7 @@ const KNOWN_RETAILERS = [
   'belk', 'kohls', 'jcpenney', 'zappos', '6pm', 'amazon', 'walmart', 'target', 'costco', 'tjmaxx',
   'marshalls', 'burlington', 'dsw', 'footlocker', 'finishline', 'jdsports', 'champssports', 'dickssportinggoods',
   'rei', 'shopbop', 'revolve', 'fwrd', 'ssense', 'farfetch', 'mytheresa', 'netaporter', 'mrporter', '24s',
-  'luisaviaroma', 'modaoperandi', 'cettire', 'italist', 'editorialist', 'shopapp', 'shopshopapp', 'ebay', 'etsy',
+  'luisaviaroma', 'modaoperandi', 'cettire', 'italist', 'editorialist', 'ebay', 'etsy',
   'asos', 'zara', 'hm', 'uniqlo', 'mango', 'gap', 'oldnavy', 'bananarepublic', 'jcrew', 'madewell', 'abercrombie',
   'americaneagle', 'urbanoutfitters', 'anthropologie', 'freepeople', 'lululemon', 'sunglasshut', 'lenscrafters',
   // Brands selling direct

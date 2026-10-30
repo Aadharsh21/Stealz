@@ -58,15 +58,22 @@ export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
   const tax = raw.tax ?? taxFor(ctx.country, raw.price, title, ctx.regionCode, ctx.postalCode);
   const addedTax = tax.mode === 'estimated' || tax.mode === 'exact' ? tax.amount ?? 0 : 0;
 
+  // Provider totals only include tax the provider itself knows about. When we estimate the
+  // tax, their total is price + shipping and our estimate goes on top.
+  const taxInProviderTotal = tax.mode === 'exact' ? addedTax : 0;
+
   // If the provider gave a total but no shipping cost, the difference is the shipping.
   if (shipping.cost == null && raw.providerTotal != null) {
-    const inferred = round2(raw.providerTotal - raw.price - addedTax);
+    const inferred = round2(raw.providerTotal - raw.price - taxInProviderTotal);
     if (inferred >= 0 && inferred < raw.price) shipping = makeShipping(ctx, inferred);
   }
   const computed = round2(raw.price + (shipping.cost ?? 0) + addedTax);
-  const total = raw.providerTotal != null && raw.providerTotal >= raw.price && Math.abs(raw.providerTotal - computed) <= Math.max(1, computed * 0.15)
-    ? round2(raw.providerTotal)
-    : computed;
+  const useProviderTotal =
+    raw.providerTotal != null &&
+    tax.mode !== 'estimated' &&
+    raw.providerTotal >= raw.price &&
+    Math.abs(raw.providerTotal - computed) <= Math.max(1, computed * 0.15);
+  const total = useProviderTotal ? round2(raw.providerTotal as number) : computed;
 
   const tags = new Set(raw.tags ?? []);
   const pct = discountPercent(raw.price, raw.originalPrice);

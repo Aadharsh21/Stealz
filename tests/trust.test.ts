@@ -53,3 +53,12 @@ test('unverified sellers lose picks to verified stores', () => {
   assert.ok(offers[0].tags.includes('Unverified seller'));
   assert.equal(cheapestOf(offers)?.store, 'COACH');
 });
+
+test('estimated tax is added on top of a provider total that leaves it out', () => {
+  const o = finalizeOffer({ source: 'google', store: 'Editorialist', title: 'Coach Tabby Shoulder Bag 26', price: 457, providerTotal: 457, shipping: makeShipping(ctx, 0) }, ctx);
+  assert.equal(o.tax.mode, 'estimated');
+  assert.equal(o.total, 496.03);
+  const withShipping = finalizeOffer({ source: 'google', store: 'Lyst', title: 'Coach Tabby Shoulder Bag 26', price: 475, providerTotal: 523 }, ctx);
+  assert.equal(withShipping.shipping.cost, 48);
+  assert.equal(withShipping.total, 563.57);
+});
