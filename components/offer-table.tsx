@@ -118,7 +118,7 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
             {rows.map((o) => {
               const isCheapest = cheapest?.id === o.id;
               return (
-                <tr key={o.id} className={`align-top ${isCheapest ? 'bg-sticker/10' : ''}`}>
+                <tr key={o.id} className={`align-top ${isCheapest ? 'bg-sticker/10 dark:bg-sticker/[0.06]' : ''}`}>
                   <td className="border-b border-line py-4 pr-4">
                     <div className="flex items-center gap-2">
                       <StoreLogo src={o.storeLogo} name={o.store} size={20} />
@@ -177,7 +177,7 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
         {rows.map((o) => {
           const isCheapest = cheapest?.id === o.id;
           return (
-            <li key={o.id} className={`rounded-2xl p-4 ring-1 ${isCheapest ? 'bg-sticker/10 ring-sticker' : 'ring-line'}`}>
+            <li key={o.id} className={`rounded-2xl p-4 ring-1 ${isCheapest ? 'bg-sticker/10 ring-sticker dark:bg-sticker/[0.06]' : 'ring-line'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">

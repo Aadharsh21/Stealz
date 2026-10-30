@@ -21,7 +21,7 @@ function Cell({
     <Link
       href={productHref(listing.ref)}
       className={`group flex flex-col rounded-2xl p-4 ring-1 transition-colors ${
-        highlight ? 'bg-sticker/15 ring-sticker hover:bg-sticker/25' : 'bg-paper ring-line hover:bg-canvas'
+        highlight ? 'bg-sticker/15 ring-sticker hover:bg-sticker/25 dark:bg-sticker/[0.06] dark:hover:bg-sticker/10' : 'bg-paper ring-line hover:bg-canvas'
       }`}
     >
       <div className="flex items-center justify-between gap-2">{heading}</div>
