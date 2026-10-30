@@ -69,6 +69,11 @@ test('one row per store, even when Google names it two ways', async () => {
     { host: 'www.coach.com', currency: 'USD' },
   );
   assert.deepEqual(pick.sameItem.map((o) => o.store), ["Dillard's", 'coach.com']);
+  const pricey = pickOffers(
+    [listing('A', 'Coach Tabby Shoulder Bag 26', 450), listing('B', 'Coach Tabby Shoulder Bag 26', 480), listing('C', 'Coach Tabby Shoulder Bag 26', 500), listing('www.oddprint.com', 'Coach Tabby Shoulder Bag 26', 1140)],
+    { currency: 'USD' },
+  );
+  assert.deepEqual(pricey.sameItem.map((o) => o.store), ['A', 'B', 'C']);
 });
 
 test('without this store in the results, savings compare item prices; without a color, colors are listed', () => {

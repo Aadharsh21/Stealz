@@ -192,8 +192,13 @@ export function pickOffers(
     same.push(l);
   }
 
-  const sameItem = perStore(same).slice(0, 10).map((l) => toOffer(l, stem));
-  const cheapestListing = cheapestOf(perStore(same));
+  // Listings at more than twice the usual total are resellers, errors or worse: leave them out.
+  const stores = perStore(same);
+  const totals = stores.map((l) => l.total).sort((x, y) => x - y);
+  const median = totals.length ? totals[Math.floor((totals.length - 1) / 2)] : 0;
+  const sensible = stores.filter((l) => totals.length < 3 || l.total <= median * 2.2);
+  const sameItem = sensible.slice(0, 10).map((l) => toOffer(l, stem));
+  const cheapestListing = cheapestOf(sensible);
   const cheapest = cheapestListing ? toOffer(cheapestListing, stem) : undefined;
   const here = sameItem.find((o) => o.thisStore);
 
