@@ -139,7 +139,14 @@ export function SearchBox({
             large ? 'h-12 px-6 text-[16px]' : 'h-8 px-4 text-[14px]'
           }`}
         >
-          {large ? 'Compare prices' : 'Search'}
+          {large ? (
+            <>
+              <span className="sm:hidden">Search</span>
+              <span className="hidden sm:inline">Compare prices</span>
+            </>
+          ) : (
+            'Search'
+          )}
         </button>
       </div>
 
