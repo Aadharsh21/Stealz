@@ -28,6 +28,7 @@ function StoreBadges({ o }: { o: Offer }) {
   const pct = o.discountNote ? null : discountPercent(o.price, o.originalPrice);
   return (
     <div className="mt-1.5 flex flex-wrap gap-1.5">
+      {o.colorNote && <Badge tone="warn">{o.colorNote}</Badge>}
       {o.priceWarning && <Badge tone="warn">Check this price</Badge>}
       {o.tags.includes('Unverified seller') && <Badge tone="warn">Unverified seller</Badge>}
       {o.isBrandStore && <Badge tone="info">Brand store</Badge>}
@@ -39,7 +40,7 @@ function StoreBadges({ o }: { o: Offer }) {
         </Badge>
       )}
       {o.tags
-        .filter((t) => !/% off$|^Coupon$|^Inflated discount$|^Check this price$|^Unverified seller$/.test(t))
+        .filter((t) => !/% off$|^Coupon$|^Inflated discount$|^Check this price$|^Unverified seller$|^Different color$/.test(t))
         .slice(0, 2)
         .map((t) => (
           <Badge key={t}>{t}</Badge>
@@ -59,9 +60,9 @@ function GoButton({ o, compact = false }: { o: Offer; compact?: boolean }) {
       className={`inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink font-semibold text-paper hover:bg-ink-soft ${
         compact ? 'h-9 px-3.5 text-[13px]' : 'h-9 px-4 text-[13px]'
       }`}
-      aria-label={`Go to ${o.store} (opens in a new tab)`}
+      aria-label={o.linkIsSearch ? `Search Google for this item at ${o.store} (opens in a new tab)` : `Go to ${o.store} (opens in a new tab)`}
     >
-      Go to store <ExternalIcon size={14} />
+      {o.linkIsSearch ? 'Find it' : 'Go to store'} <ExternalIcon size={14} />
     </a>
   );
 }

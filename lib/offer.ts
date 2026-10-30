@@ -10,6 +10,7 @@ import { round2 } from './money';
 import { cleanStoreName, domainOf, faviconFor, isBrandStore, isLowTrustStore, isMarketplace, isSuspiciousStore } from './stores';
 import { taxFor } from './tax';
 import { cleanTitle, hash32 } from './text';
+import { cleanLink, searchLink } from './links';
 
 export interface RawOffer {
   source: DataSource;
@@ -53,7 +54,8 @@ export function discountPercent(price: number, original?: number): number | null
 
 export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
   const title = cleanTitle(raw.title);
-  const domain = domainOf(raw.link);
+  const link = cleanLink(raw.link);
+  const domain = domainOf(link);
   let shipping = raw.shipping ?? makeShipping(ctx, null);
   const tax = raw.tax ?? taxFor(ctx.country, raw.price, title, ctx.regionCode, ctx.postalCode);
   const addedTax = tax.mode === 'estimated' || tax.mode === 'exact' ? tax.amount ?? 0 : 0;
@@ -83,12 +85,13 @@ export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
   if (isLowTrustStore(raw.store, domain) || isSuspiciousStore(raw.store, domain, ctx.country)) tags.add('Unverified seller');
 
   return {
-    id: hash32(`${raw.source}|${raw.store}|${title}|${raw.price}|${raw.link ?? ''}`),
+    id: hash32(`${raw.source}|${raw.store}|${title}|${raw.price}|${link ?? ''}`),
     source: raw.source,
     store: cleanStoreName(raw.store),
     storeDomain: domain,
     storeLogo: raw.storeLogo ?? faviconFor(domain),
-    link: raw.link,
+    link: link ?? searchLink(title, cleanStoreName(raw.store)),
+    linkIsSearch: !link,
     title,
     image: raw.image,
     price: round2(raw.price),

@@ -32,6 +32,7 @@ function sellerBadges(l: Listing) {
   const pct = l.discountNote ? null : discountPercent(l.price, l.originalPrice);
   return (
     <>
+      {l.colorNote && <Badge tone="warn">{l.colorNote}</Badge>}
       {l.priceWarning && <Badge tone="warn">Check this price</Badge>}
       {l.tags.includes('Unverified seller') && <Badge tone="warn">Unverified seller</Badge>}
       {pct != null && <Badge tone="sale">{pct}% off</Badge>}
@@ -85,7 +86,7 @@ export function ProductCard({ group, isCheapest }: { group: ProductGroup; isChea
 
 export function ListingRow({ listing, isCheapest }: { listing: Listing; isCheapest: boolean }) {
   const l = listing;
-  const outbound = l.link ?? l.googleLink;
+  const outbound = l.linkIsSearch ? (l.googleLink ?? l.link) : l.link;
   const taxText =
     l.tax.mode === 'estimated' || l.tax.mode === 'exact'
       ? `${l.tax.amount ? `+ ${new Intl.NumberFormat('en-US', { style: 'currency', currency: l.currency, currencyDisplay: l.currency === 'AED' ? 'code' : 'narrowSymbol' }).format(l.tax.amount)}` : 'no'} tax`

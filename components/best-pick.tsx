@@ -68,7 +68,7 @@ export function BestPick({ offers }: { offers: Offer[] }) {
           rel="noopener noreferrer nofollow"
           className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ink text-[15px] font-semibold text-paper hover:bg-ink-soft"
         >
-          Go to {best.store} <ExternalIcon size={16} />
+          {best.linkIsSearch ? `Find it at ${best.store}` : `Go to ${best.store}`} <ExternalIcon size={16} />
         </a>
       )}
       {cheapest && cheapest.id !== best.id && (

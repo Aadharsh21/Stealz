@@ -39,7 +39,9 @@ export function isFlagged(o: Offer): boolean {
 function contenders<T extends Offer>(offers: T[]): T[] {
   const list = available(offers);
   const trusted = list.filter((o) => !isFlagged(o));
-  return trusted.length ? trusted : list;
+  const pool = trusted.length ? trusted : list;
+  const rightColor = pool.filter((o) => !o.colorNote);
+  return rightColor.length ? rightColor : pool;
 }
 
 /**
@@ -66,6 +68,7 @@ export function rankOffers<T extends Offer>(offers: T[], speedWeight = DEFAULT_S
       if (offer.isMarketplace) score += 0.02;
       if (offer.tags.includes('Unverified seller')) score += 0.5;
       if (offer.priceWarning) score += 10;
+      if (offer.colorNote) score += 5;
       if (offer.isBrandStore) score -= 0.01;
       if (offer.rating != null && offer.rating < 3.5) score += 0.03;
       return { offer, score };

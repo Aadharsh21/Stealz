@@ -5,7 +5,8 @@ import type { Listing, Offer, ProductDetails, ProductRef, ProductResponse, Resol
 import { COUNTRIES } from './countries';
 import { config, dataMode, ebayEnabled, emailEnabled, googleEnabled, hasDatabase } from './config';
 import { cacheGet, cacheSet } from './cache';
-import { computeDealScore, markInflatedDiscounts, markLuxuryFloors, markPriceOutliers, summarizeHistory } from './deal';
+import { wantedColorText } from './colors';
+import { computeDealScore, markColorMismatches, markInflatedDiscounts, markLuxuryFloors, markPriceOutliers, summarizeHistory } from './deal';
 import { AppError } from './errors';
 import { getHistory, recordSnapshots, snapshotRows } from './history';
 import { takeLiveCredit } from './limits';
@@ -145,7 +146,10 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
 
   const stats = { fakes: 0 };
   const checked = markPriceOutliers(markLuxuryFloors(offersFromItems(raw.items, loc, now, stats)));
-  let offers = checked.filter((o) => !isFlagged(o));
+  let offers = markColorMismatches(
+    checked.filter((o) => !isFlagged(o)),
+    wantedColorText(ref.q, ref.title, raw.details.title),
+  );
   const hiddenStores = stats.fakes + (checked.length - offers.length);
   if (offers.length === 0 && hiddenStores > 0) {
     throw new AppError("Every store selling this looks like a fake seller, so we're not showing it. Try searching again.", 404, 'not_found');

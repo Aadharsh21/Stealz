@@ -3,6 +3,7 @@
 import type { DealScore, HistoryPoint, HistoryResponse, Offer } from './types';
 import { formatMoney, round2 } from './money';
 import { cheapestOf, effectiveTotal } from './scoring';
+import { colorMismatch } from './colors';
 import { luxuryFloorWarning } from './luxury';
 import { isKnownRetailer } from './stores';
 
@@ -93,6 +94,16 @@ export function markPriceOutliers<T extends Offer>(offers: T[], reference: Offer
       priceWarning: `${below}% below the usual ${formatMoney(typical, o.currency)}. It could be a fake, a used item or a different product, so check the seller first.`,
       tags: o.tags.includes('Check this price') ? o.tags : [...o.tags, 'Check this price'],
     };
+  });
+}
+
+/** Notes offers whose title names a different color than `wanted` (a search or product title). */
+export function markColorMismatches<T extends Offer>(offers: T[], wanted?: string): T[] {
+  if (!wanted) return offers;
+  return offers.map((o) => {
+    const note = colorMismatch(wanted, o.title);
+    if (!note) return o;
+    return { ...o, colorNote: note, tags: o.tags.includes('Different color') ? o.tags : [...o.tags, 'Different color'] };
   });
 }
 

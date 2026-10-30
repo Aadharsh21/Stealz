@@ -11,6 +11,7 @@ import { finalizeOffer } from './offer';
 import type { OfferContext } from './offer';
 import { encodeRef } from './ref';
 import { markLuxuryFloors, markPriceOutliers } from './deal';
+import { cleanLink } from './links';
 import { cheapestOf, explainPick, fastestOf, rankOffers } from './scoring';
 import { domainOf, isNotAnItem, isResaleStore, looksCounterfeit, looksUsed } from './stores';
 import { exactTax } from './tax';
@@ -113,7 +114,7 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
       match: matchScore(query, item.title),
       ref: encodeRef(ref),
       multipleSources: item.multipleSources,
-      googleLink: item.googleLink,
+      googleLink: cleanLink(item.googleLink),
     });
   }
   return { listings, hiddenUsed, hiddenFakes };

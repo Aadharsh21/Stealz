@@ -105,6 +105,10 @@ export interface Offer {
   discountNote?: string;
   /** Set when the price is far below what this item usually costs (possible fake or wrong item). */
   priceWarning?: string;
+  /** Set when this price is for a different color than the one searched for, e.g. "Green, not pink". */
+  colorNote?: string;
+  /** True when the store gave no link and `link` is a search for the item instead. */
+  linkIsSearch?: boolean;
   /** "In store, 3 mi" style availability near the shopper. */
   nearby?: string;
   tags: string[];

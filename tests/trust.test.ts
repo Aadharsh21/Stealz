@@ -90,3 +90,27 @@ test('copy shops and replica listings are recognized', async () => {
   assert.equal(looksCounterfeit("Dillard's", 'Coach Willow Tote 24'), false);
   assert.equal(looksCounterfeit('Nordstrom', 'Faux Fur Coat'), false);
 });
+
+test('colors: a different color is called out, matching or unstated colors are not', async () => {
+  const { colorMismatch, wantedColorText } = await import('../lib/colors');
+  assert.equal(colorMismatch('swarovski millenia necklace pink', "Swarovski Women's Millenia Green Necklace"), 'Green, not pink');
+  assert.equal(colorMismatch('Millenia necklace, Octagon cut, Pink, Gold-tone plated', 'Millenia necklace, Octagon cut, Green, Gold-tone plated'), 'Green, not pink');
+  assert.equal(colorMismatch('swarovski millenia necklace pink', 'Swarovski Millenia Necklace Octagon Cut'), null);
+  assert.equal(colorMismatch('millenia necklace lilac', 'Millenia Tennis necklace Octagon cut Purple Gold-tone finish'), null);
+  assert.equal(colorMismatch('coach tabby 26 black', 'Coach Tabby Shoulder Bag 26 in Black Denim'), null);
+  assert.equal(colorMismatch('rose gold watch', 'Fossil watch rose gold tone'), null);
+  assert.equal(colorMismatch('rose gold watch', 'Fossil watch silver tone'), 'Silver tone, not rose gold');
+  assert.equal(colorMismatch('emerald cut ring', 'Emerald cut ring white gold'), null);
+  assert.equal(wantedColorText('swarovski millenia necklace', 'Millenia necklace Pink'), 'Millenia necklace Pink');
+});
+
+test('store links are made absolute or replaced with a search', async () => {
+  const { cleanLink } = await import('../lib/links');
+  assert.equal(cleanLink('https://www.swarovski.com/en-AE/p-5671251'), 'https://www.swarovski.com/en-AE/p-5671251');
+  assert.equal(cleanLink('/url?q=https://www.swarovski.com/p-1&sa=U'), 'https://www.swarovski.com/p-1');
+  assert.equal(cleanLink('/aclk?sa=l&ai=abc'), 'https://www.google.com/aclk?sa=l&ai=abc');
+  assert.equal(cleanLink('p-5671251.html'), undefined);
+  const o = finalizeOffer({ source: 'google', store: 'Swarovski.ae', title: 'Millenia necklace', price: 2600 }, ctx);
+  assert.equal(o.linkIsSearch, true);
+  assert.match(o.link ?? '', /^https:\/\/www\.google\.com\/search\?q=/);
+});
