@@ -46,6 +46,19 @@ export function keyTokens(input: string): string[] {
   return tokens(input).filter((t) => !FILLER.has(t) && !SIZE_TOKEN.test(t));
 }
 
+/**
+ * Category and color words count half as much as brand and model names, so "Swarovski Maira
+ * pink necklace" isn't a close match for "Swarovski Millenia necklace pink".
+ */
+const GENERIC = new Set([
+  'bag', 'tote', 'handbag', 'purse', 'crossbody', 'shoulder', 'clutch', 'backpack', 'wallet', 'satchel',
+  'necklace', 'bracelet', 'ring', 'earring', 'pendant', 'jewelry', 'jewellery', 'watch', 'sunglass',
+  'shoe', 'sneaker', 'trainer', 'boot', 'sandal', 'heel', 'loafer', 'jacket', 'coat', 'dress', 'shirt',
+  'tshirt', 'tee', 'jean', 'pant', 'trouser', 'short', 'skirt', 'sweater', 'hoodie', 'top', 'belt', 'hat',
+  'cap', 'scarf', 'leather', 'black', 'white', 'ivory', 'cream', 'grey', 'gray', 'beige', 'tan', 'brown',
+  'red', 'pink', 'purple', 'lilac', 'blue', 'navy', 'green', 'yellow', 'orange', 'gold', 'silver', 'rose',
+]);
+
 /** Listings scoring at least this are treated as the item the shopper searched for. */
 export const CLOSE_MATCH = 0.8;
 
@@ -64,9 +77,10 @@ export function matchScore(query: string, title: string): number {
       if (titleSet.has(t) || !titleSet.has(other)) hit += 0.5;
       continue;
     }
-    total += 1;
+    const weight = GENERIC.has(t) ? 0.5 : 1;
+    total += weight;
     // "air force 1" vs "airforce1", "ray ban" vs "rayban"
-    if (titleSet.has(t) || (t.length >= 4 && titleJoined.includes(t))) hit += 1;
+    if (titleSet.has(t) || (t.length >= 4 && titleJoined.includes(t))) hit += weight;
   }
   return total === 0 ? 1 : Math.round((hit / total) * 100) / 100;
 }

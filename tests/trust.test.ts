@@ -117,3 +117,10 @@ test('store links are made absolute or replaced with a search', async () => {
   assert.equal(o.linkIsSearch, true);
   assert.match(o.link ?? '', /^https:\/\/www\.google\.com\/search\?q=/);
 });
+
+test('model names matter more than category and color words when matching', async () => {
+  const { matchScore, CLOSE_MATCH } = await import('../lib/text');
+  assert.ok(matchScore('swarovski millenia necklace pink', 'Maira Pendant Pink – Swarovski Crystal Pendant Necklace') < CLOSE_MATCH);
+  assert.ok(matchScore('swarovski millenia necklace pink', 'Swarovski Millenia Tennis necklace Octagon cut Purple') >= CLOSE_MATCH);
+  assert.ok(matchScore('coach tabby shoulder bag 26', 'COACH Tabby Shoulder Bag 26 Women\'s') >= CLOSE_MATCH);
+});
