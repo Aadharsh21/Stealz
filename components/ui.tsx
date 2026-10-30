@@ -92,7 +92,7 @@ export function Badge({ tone = 'neutral', children, className = '' }: { tone?: B
 /** The clearance sticker. Use it for one thing per view: the best price. */
 export function Sticker({ children, animate = false, className = '' }: { children: React.ReactNode; animate?: boolean; className?: string }) {
   return (
-    <span className={`sticker ${animate ? 'sticker-in' : ''} inline-flex items-center rounded-[6px] px-2 py-1 text-[12px] font-extrabold leading-none ${className}`}>
+    <span className={`sticker ${animate ? 'sticker-in' : ''} inline-flex items-center rounded-[4px] px-2 py-[5px] text-[11.5px] font-bold leading-none tracking-[0.02em] ${className}`}>
       {children}
     </span>
   );

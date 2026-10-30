@@ -81,7 +81,7 @@ export function ReceiptExample() {
   return (
     <figure className="relative mx-auto w-full max-w-[420px] lg:ml-auto" aria-label={`Example comparison for ${ex.item}`}>
       <div
-        className="rounded-t-2xl bg-paper px-6 pb-10 pt-6 shadow-[0_24px_60px_-28px_rgba(29,35,64,0.35)] ring-1 ring-line"
+        className="theme-ivory rounded-t-2xl bg-paper px-6 pb-10 pt-6 text-ink shadow-[0_40px_90px_-40px_rgba(0,0,0,0.9)]"
         style={{
           WebkitMaskImage:
             'linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom/16px 12px repeat-x',

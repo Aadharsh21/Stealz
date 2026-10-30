@@ -9,7 +9,7 @@ import { Badge, Money, Sticker, StoreLogo, WasPrice } from './ui';
 
 export function ProductImage({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) {
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-canvas dark:bg-white ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl bg-plinth ${className}`}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

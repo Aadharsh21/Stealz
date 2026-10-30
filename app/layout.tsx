@@ -1,15 +1,21 @@
 import type { Metadata, Viewport } from 'next';
-import { Archivo } from 'next/font/google';
+import { Cormorant_Garamond, Manrope } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@/lib/brand';
 import { LocationProvider } from '@/components/location-provider';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 
-const archivo = Archivo({
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
-  variable: '--font-archivo',
-  axes: ['wdth'],
+  weight: ['500', '600', '700'],
+  variable: '--font-cormorant',
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
   display: 'swap',
 });
 
@@ -41,15 +47,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#151a30' },
-  ],
+  themeColor: '#141312',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={archivo.variable}>
+    <html lang="en" className={`${cormorant.variable} ${manrope.variable}`}>
       <body className="min-h-dvh">
         <LocationProvider>
           <a

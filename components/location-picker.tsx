@@ -133,7 +133,7 @@ export function LocationPicker() {
       onClick={(e) => {
         if (e.target === dialogRef.current) closePicker();
       }}
-      className="m-auto w-[min(440px,calc(100vw-32px))] rounded-2xl bg-paper p-0 text-ink shadow-2xl ring-1 ring-line backdrop:bg-[#0e1124]/50"
+      className="m-auto w-[min(440px,calc(100vw-32px))] rounded-2xl bg-paper p-0 text-ink shadow-2xl ring-1 ring-line backdrop:bg-black/70"
       aria-labelledby="location-title"
     >
       <form onSubmit={save} className="p-6">

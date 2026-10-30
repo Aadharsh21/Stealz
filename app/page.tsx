@@ -47,7 +47,7 @@ export default function HomePage() {
     <>
       <section className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.12fr_1fr] lg:gap-16">
         <div>
-          <h1 className="type-wide text-[44px] font-extrabold leading-[0.98] tracking-[-0.04em] sm:text-[60px] lg:text-[66px]">
+          <h1 className="type-wide type-hero text-[52px] leading-[0.95] sm:text-[68px] lg:text-[78px]">
             Find the real steal.
           </h1>
           <p className="mt-5 max-w-[34rem] text-[18px] leading-relaxed text-ink-soft">
@@ -70,7 +70,7 @@ export default function HomePage() {
             {STEPS.map((step, i) => (
               <li key={step.title} className="relative">
                 <span
-                  className="type-cond grid h-11 w-11 place-items-center rounded-full bg-ink text-[22px] font-extrabold text-paper"
+                  className="type-cond grid h-11 w-11 place-items-center rounded-full text-[22px] text-sticker ring-1 ring-sticker/60"
                   aria-hidden="true"
                 >
                   {i + 1}

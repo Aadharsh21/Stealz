@@ -1,53 +1,48 @@
 @import "tailwindcss";
 
-/* Stealz design tokens.
-   Denim ink on white, a clearance-sticker yellow reserved for "the steal",
-   and markdown red only for struck-through prices and discounts. */
+/* Stealz design tokens: a jewelry-house look.
+   Charcoal and ivory, with champagne kept for what matters most: the best price.
+   One theme for everyone, whatever the device's light or dark setting. */
 :root {
-  --paper: #ffffff;
-  --canvas: #f3f4f8;
-  --ink: #1d2340;
-  --ink-soft: #3b4263;
-  --muted: #5f6680;
-  --line: #e2e4ec;
-  --line-strong: #c7cbd9;
-  --sticker: #ffd829;
-  --sticker-ink: #1d2340;
-  --markdown: #d7352b;
-  --series: #3d5ad6;
-  --series-wash: rgba(61, 90, 214, 0.1);
-  --good: #0a8a0a;
-  --warning: #b97c00;
-  --critical: #c8322f;
-  --focus: #3d5ad6;
-  color-scheme: light;
+  --paper: #141312;
+  --canvas: #1d1b18;
+  --smoke: #26241f;
+  --plinth: #efeae1;
+  --ink: #f2eee6;
+  --ink-soft: #d3ccc0;
+  --muted: #9c9487;
+  --line: #2f2c27;
+  --line-strong: #4a453d;
+  --sticker: #c9a86a;
+  --sticker-ink: #141312;
+  --markdown: #e08a7e;
+  --series: #c9a86a;
+  --series-wash: rgba(201, 168, 106, 0.12);
+  --good: #8dc2a0;
+  --warning: #e9a15f;
+  --critical: #ee7f75;
+  --focus: #c9a86a;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #151a30;
-    --canvas: #1c2240;
-    --ink: #eef0f8;
-    --ink-soft: #c9cde0;
-    --muted: #9ea4be;
-    --line: #2a3156;
-    --line-strong: #3d4675;
-    --sticker: #ffd829;
-    --sticker-ink: #151a30;
-    --markdown: #ff7a6e;
-    --series: #6f86f2;
-    --series-wash: rgba(111, 134, 242, 0.12);
-    --good: #4cc38a;
-    --warning: #f2b632;
-    --critical: #ff7a6e;
-    --focus: #8ea2ff;
-    color-scheme: dark;
-  }
+/* An ivory card on the charcoal page, like a boutique receipt. */
+.theme-ivory {
+  --paper: #f2eee6;
+  --canvas: #e8e2d7;
+  --ink: #141312;
+  --ink-soft: #3d3831;
+  --muted: #6e665a;
+  --line: #d6cebf;
+  --line-strong: #b9b0a0;
+  --markdown: #a4372b;
+  color-scheme: light;
 }
 
 @theme inline {
   --color-paper: var(--paper);
   --color-canvas: var(--canvas);
+  --color-smoke: var(--smoke);
+  --color-plinth: var(--plinth);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-muted: var(--muted);
@@ -61,7 +56,8 @@
   --color-warning: var(--warning);
   --color-critical: var(--critical);
   --color-focus: var(--focus);
-  --font-sans: var(--font-archivo), "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
 }
 
 html {
@@ -88,25 +84,34 @@ body {
   border-radius: 6px;
 }
 
-/* Archivo's width axis carries the personality: wide for display, condensed for prices. */
-.type-wide {
-  font-variation-settings: "wdth" 125;
-  font-stretch: 125%;
+/* Cormorant Garamond for headings and prices, Manrope for everything you read or tap.
+   These sit outside Tailwind's layers on purpose, so they win over weight and tracking
+   utilities left on the elements. */
+.type-wide,
+.type-cond {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  font-variant-numeric: lining-nums;
+  /* Cormorant's small x-height reads small next to Manrope; scale it up to match. */
+  font-size-adjust: 0.44;
 }
 .type-cond {
-  font-variation-settings: "wdth" 72;
-  font-stretch: 72%;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0;
+}
+.type-hero {
+  font-weight: 500;
+  letter-spacing: -0.015em;
 }
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* The clearance sticker: marks the single best price in a view. */
+/* The champagne tag: marks the single best price in a view. */
 .sticker {
   background: var(--sticker);
   color: var(--sticker-ink);
-  transform: rotate(-3deg);
-  box-shadow: 0 1px 0 rgba(29, 35, 64, 0.25);
 }
 
 /* Markdown pen: a was-price crossed out by hand. */
@@ -145,21 +150,18 @@ body {
   }
 }
 
-@keyframes stick {
-  0% {
-    transform: rotate(-14deg) scale(1.35);
+@keyframes tag-in {
+  from {
     opacity: 0;
+    transform: translateY(2px);
   }
-  60% {
-    transform: rotate(-1deg) scale(0.96);
+  to {
     opacity: 1;
-  }
-  100% {
-    transform: rotate(-3deg) scale(1);
+    transform: none;
   }
 }
 .sticker-in {
-  animation: stick 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation: tag-in 360ms ease-out both;
 }
 
 @keyframes shimmer {

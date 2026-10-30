@@ -266,7 +266,7 @@ export function ResultsView() {
                 onClick={(e) => {
                   if (e.target === filterDialog.current) filterDialog.current?.close();
                 }}
-                className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl bg-paper p-0 text-ink backdrop:bg-[#0e1124]/50 lg:hidden"
+                className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl bg-paper p-0 text-ink backdrop:bg-black/70 lg:hidden"
                 aria-label="Filters"
               >
                 <div className="p-5">
