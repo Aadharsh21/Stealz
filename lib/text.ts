@@ -139,7 +139,8 @@ const BRANDS = [
   'Max Mara', 'Isabel Marant', 'Ganni', 'Zimmermann', 'Toteme', 'Khaite', 'Proenza Schouler', "Tod's", 'Bally',
   'Montblanc', 'Sandro', 'Maje', 'AllSaints', 'Reformation', 'Cole Haan', 'Sorel', 'Veja', 'Axel Arigato',
   'Common Projects', 'Autry', 'Saucony', 'Brooks', 'Mizuno', 'Fila', 'Onitsuka Tiger', 'Maison de Sabré',
-  'Kurt Geiger', 'Aquazzura', 'Manolo Blahnik', 'Rag & Bone', 'Vince Camuto',
+  'Kurt Geiger', 'Aquazzura', 'Manolo Blahnik', 'Rag & Bone', 'Vince Camuto', 'Alexander Wang', 'Kay Unger',
+  'Mac Duggal', 'La DoubleJ', 'Self-Portrait', 'Staud', 'Cult Gaia', 'Ulla Johnson', 'Veronica Beard', 'Sezane',
 ];
 
 const BRAND_INDEX = BRANDS.map((name) => ({ name, norm: normalize(name) }))
