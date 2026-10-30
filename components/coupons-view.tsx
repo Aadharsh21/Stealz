@@ -71,7 +71,7 @@ function CouponCard({ coupon: c }: { coupon: CouponRow }) {
 export function CouponsView() {
   const { location, ready } = useLocation();
   const country = location?.country ?? 'US';
-  const name = COUNTRIES[country].name;
+  const name = COUNTRIES[country].inPhrase;
   const [results, setResults] = useState<Record<string, CouponsResponse | 'error'>>({});
   const data = results[country];
 
@@ -89,7 +89,7 @@ export function CouponsView() {
 
   const codes = data && data !== 'error' ? data.codes : [];
   const stores = data && data !== 'error' ? data.stores : [];
-  const tabLabel = (id: string) => SALE_TABS.find((t) => t.id === id)?.label.toLowerCase() ?? '';
+  const tabNoun = (id: string) => SALE_TABS.find((t) => t.id === id)?.noun ?? '';
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pt-14">
@@ -153,7 +153,7 @@ export function CouponsView() {
                 <div className="min-w-0">
                   <p className="truncate text-[16px] font-bold">{s.store}</p>
                   <p className="text-[13px] text-muted">
-                    {s.items} {s.items === 1 ? 'item' : 'items'} on sale, mostly {tabLabel(s.tab)}
+                    {s.items} {s.items === 1 ? 'item' : 'items'} on sale {s.tabs > 1 ? 'across categories, mostly' : 'in'} {tabNoun(s.tab)}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">

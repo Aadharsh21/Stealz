@@ -73,7 +73,7 @@ export async function getSearchItems(
   const useGoogle = googleEnabled();
   const useEbay = ebayEnabled() && loc.country === 'US' && !opts.onSale;
   if (!useGoogle && !useEbay) {
-    return { items: [], sources: [], notices: [`Live results for ${COUNTRIES[loc.country].name} aren't set up yet.`], demo: false, fetchedAt: new Date().toISOString(), cached: false };
+    return { items: [], sources: [], notices: [`Live results for ${COUNTRIES[loc.country].inPhrase} aren't set up yet.`], demo: false, fetchedAt: new Date().toISOString(), cached: false };
   }
   if (useGoogle) await takeLiveCredit();
 

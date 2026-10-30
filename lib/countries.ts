@@ -4,6 +4,8 @@ export interface CountryConfig {
   code: CountryCode;
   name: string;
   short: string;
+  /** How the country reads mid-sentence: "stores in the US", "delivered to India". */
+  inPhrase: string;
   currency: CurrencyCode;
   locale: string;
   /** Google country and language parameters. */
@@ -38,6 +40,7 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     code: 'US',
     name: 'United States',
     short: 'US',
+    inPhrase: 'the US',
     currency: 'USD',
     locale: 'en-US',
     gl: 'us',
@@ -56,6 +59,7 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     code: 'GB',
     name: 'United Kingdom',
     short: 'UK',
+    inPhrase: 'the UK',
     currency: 'GBP',
     locale: 'en-GB',
     gl: 'uk',
@@ -74,6 +78,7 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     code: 'AE',
     name: 'United Arab Emirates',
     short: 'UAE',
+    inPhrase: 'the UAE',
     currency: 'AED',
     locale: 'en-AE',
     gl: 'ae',
@@ -89,6 +94,7 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     code: 'IN',
     name: 'India',
     short: 'India',
+    inPhrase: 'India',
     currency: 'INR',
     locale: 'en-IN',
     gl: 'in',

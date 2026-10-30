@@ -105,7 +105,7 @@ export function HomePicks() {
             Worth a look this week
           </h2>
           <p className="mt-1 text-[15px] text-muted">
-            Real prices from stores in {COUNTRIES[country].name}. Tap one to compare every store.
+            Real prices from stores in {COUNTRIES[country].inPhrase}. Tap one to compare every store.
           </p>
         </div>
         <div className="hidden gap-2 sm:flex">

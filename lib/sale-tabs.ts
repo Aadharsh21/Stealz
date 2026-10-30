@@ -3,12 +3,12 @@
 import type { CurrencyCode } from './types';
 
 export const SALE_TABS = [
-  { id: 'women', label: 'Women', query: "women's designer clothing" },
-  { id: 'men', label: 'Men', query: "men's designer clothing" },
-  { id: 'bags', label: 'Bags', query: 'designer handbags' },
-  { id: 'sneakers', label: 'Sneakers', query: 'designer sneakers' },
-  { id: 'accessories', label: 'Accessories', query: 'designer accessories' },
-  { id: 'kids', label: 'Kids', query: 'kids clothing' },
+  { id: 'women', label: 'Women', noun: "women's clothing", query: "women's designer clothing" },
+  { id: 'men', label: 'Men', noun: "men's clothing", query: "men's designer clothing" },
+  { id: 'bags', label: 'Bags', noun: 'bags', query: 'designer handbags' },
+  { id: 'sneakers', label: 'Sneakers', noun: 'sneakers', query: 'designer sneakers' },
+  { id: 'accessories', label: 'Accessories', noun: 'accessories', query: 'designer accessories' },
+  { id: 'kids', label: 'Kids', noun: "kids' clothing", query: 'kids clothing' },
 ] as const;
 
 export type SaleTab = (typeof SALE_TABS)[number]['id'];
@@ -44,6 +44,8 @@ export interface StoreSale {
   maxPct?: number;
   /** The tab with the most of this store's items, for the "See items" link. */
   tab: SaleTab;
+  /** How many tabs have this store's items. */
+  tabs: number;
 }
 
 export function isSaleTab(value: string | null | undefined): value is SaleTab {

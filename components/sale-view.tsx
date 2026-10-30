@@ -113,7 +113,7 @@ export function SaleView() {
       <header className="max-w-3xl">
         <h1 className="type-wide type-hero text-[52px] leading-[0.95] sm:text-[72px]">On sale</h1>
         <p className="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-ink-soft">
-          Markdowns from stores that deliver to {COUNTRIES[country].name}. Fake shops, used items and inflated &ldquo;was&rdquo;
+          Markdowns from stores that deliver to {COUNTRIES[country].inPhrase}. Fake shops, used items and inflated &ldquo;was&rdquo;
           prices are left out, and each item opens a full comparison with delivery and tax.
         </p>
       </header>

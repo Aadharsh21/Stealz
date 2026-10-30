@@ -76,6 +76,7 @@ export function storeSales(byTab: Partial<Record<SaleTab, SaleItem[]>>, limit = 
       items: s.items,
       maxPct: s.maxPct,
       tab: [...s.tabs.entries()].sort((a, b) => b[1] - a[1])[0][0],
+      tabs: s.tabs.size,
     }))
     .sort((a, b) => b.items - a.items || (b.maxPct ?? 0) - (a.maxPct ?? 0))
     .slice(0, limit);

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { COUNTRIES } from '@/lib/countries';
 import { addRecentSearch, clearRecentSearches, loadRecentSearches } from '@/lib/storage';
 import { popularSearches, suggest } from '@/lib/suggestions';
 import { ClockIcon, SearchIcon, XIcon } from './icons';
@@ -74,7 +75,7 @@ export function SearchBox({
 
   const large = size === 'lg';
   const showList = open && options.length > 0;
-  const heading = value.trim() ? null : recent.length ? 'Recent and popular' : `Popular in ${country === 'US' ? 'the US' : country === 'GB' ? 'the UK' : country === 'AE' ? 'the UAE' : 'India'}`;
+  const heading = value.trim() ? null : recent.length ? 'Recent and popular' : `Popular in ${COUNTRIES[country].inPhrase}`;
 
   return (
     <form

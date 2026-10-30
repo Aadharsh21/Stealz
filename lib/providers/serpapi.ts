@@ -240,7 +240,7 @@ export async function searchGoogleShopping(
   } catch (err) {
     if (googleLocation && err instanceof ProviderError && err.status === 400) {
       data = await serpRequest(base);
-      notices.push(`Results are for ${cfg.name}; your exact area couldn't be used.`);
+      notices.push(`Results are for ${cfg.inPhrase}; your exact area couldn't be used.`);
     } else {
       throw err;
     }
