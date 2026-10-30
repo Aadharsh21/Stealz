@@ -82,9 +82,12 @@ export function explainPick(best: Offer, cheapest?: Offer, fastest?: Offer): str
 
   if (isCheapest && isFastest) return `Lowest total and the fastest delivery${extra}.`;
   if (isCheapest) {
-    const label = best.delivery.label;
-    const when = best.delivery.maxDays != null ? `, ${label.charAt(0).toLowerCase()}${label.slice(1)}` : '';
-    return `Lowest total${when}${extra}.`;
+    if (fastest && fastest.id !== best.id && fastest.delivery.maxDays != null) {
+      const more = Math.max(0, fastest.total - best.total);
+      const when = fastest.delivery.label.replace(/^Arrives /, '');
+      return `Lowest total${extra}. ${fastest.store} arrives ${when} for ${money(more)} more.`;
+    }
+    return `Lowest total${extra}.`;
   }
   const diff = Math.max(0, best.total - (cheapest as Offer).total);
   const cheapDays = cheapest ? effectiveDays(cheapest) : 0;

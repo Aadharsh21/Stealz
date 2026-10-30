@@ -26,7 +26,7 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
 
   return (
     <div className="rounded-2xl p-5 ring-1 ring-line">
-      <div className="grid grid-cols-[minmax(6rem,9rem)_1fr] gap-x-3">
+      <div className="grid grid-cols-[minmax(4.5rem,7rem)_1fr] gap-x-3 sm:grid-cols-[minmax(6rem,9rem)_1fr]">
         <div />
         <div className="relative h-5 text-[11px] font-semibold text-muted" aria-hidden="true">
           {ticks.map((i) => (
@@ -59,7 +59,7 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
                   <span
                     className="absolute whitespace-nowrap pl-2 text-[12px] text-ink-soft"
                     style={
-                      pct(max + 1) > 70
+                      pct(max + 1) > 55
                         ? { right: `calc(${100 - pct(min)}% + 4px)`, paddingLeft: 0, paddingRight: 8 }
                         : { left: `${pct(max + 1)}%` }
                     }

@@ -33,7 +33,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
     <div>
       <ProductImage src={list[index] || undefined} alt={title} className="aspect-square" />
       {list.length > 1 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-none">
+        <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto p-1 scrollbar-none">
           {list.map((src, i) => (
             <button
               key={src + i}

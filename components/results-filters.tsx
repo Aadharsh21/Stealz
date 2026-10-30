@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { CurrencyCode } from '@/lib/types';
 import type { ResultFilters } from '@/lib/filters';
 import { DEFAULT_FILTERS, activeFilterCount } from '@/lib/filters';
@@ -18,6 +19,8 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </label>
   );
 }
+
+const STORES_SHOWN = 6;
 
 const DAY_OPTIONS: { label: string; value: number | null }[] = [
   { label: 'Any time', value: null },
@@ -40,6 +43,11 @@ export function ResultsFilters({
   const set = (patch: Partial<ResultFilters>) => onChange({ ...filters, ...patch });
   const count = activeFilterCount(filters);
   const symbol = currencySymbol(currency);
+  const [allStores, setAllStores] = useState(false);
+  const visibleStores =
+    allStores || stores.length <= STORES_SHOWN + 1
+      ? stores
+      : stores.filter((s, i) => i < STORES_SHOWN || filters.stores.includes(s.name));
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -109,8 +117,8 @@ export function ResultsFilters({
       {stores.length > 1 && (
         <fieldset>
           <legend className="mb-1 text-[13px] font-semibold text-muted">Stores</legend>
-          <div className="max-h-64 space-y-0.5 overflow-y-auto pr-1">
-            {stores.map((s) => {
+          <div className="space-y-0.5">
+            {visibleStores.map((s) => {
               const checked = filters.stores.includes(s.name);
               return (
                 <label key={s.name} className="flex cursor-pointer items-center gap-2.5 py-1 text-[14px]">
@@ -128,6 +136,16 @@ export function ResultsFilters({
               );
             })}
           </div>
+          {stores.length > STORES_SHOWN + 1 && (
+            <button
+              type="button"
+              onClick={() => setAllStores((v) => !v)}
+              aria-expanded={allStores}
+              className="mt-1 text-[13px] font-semibold text-series hover:underline"
+            >
+              {allStores ? 'Show fewer stores' : `Show all ${stores.length} stores`}
+            </button>
+          )}
         </fieldset>
       )}
     </div>

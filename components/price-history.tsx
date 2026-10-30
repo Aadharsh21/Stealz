@@ -60,8 +60,13 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
   const last = points.length - 1;
   const money = (n: number) => formatMoney(n, currency);
   const active = hover ?? null;
+  // Sit the "Today" label above the highest point it spans so it never covers the line.
+  const todayLabelY = Math.max(
+    12,
+    Math.min(...geo.xy.filter(([px]) => px >= geo.xy[last][0] - 110).map(([, py]) => py)) - 10,
+  );
 
-  function onMove(clientX: number) {
+  const onMove = (clientX: number) => {
     const el = wrapRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -76,7 +81,7 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
       }
     });
     setHover(nearest);
-  }
+  };
 
   const labelAnchor = (x: number) => (x > width - 120 ? 'end' : x < PAD.left + 60 ? 'start' : 'middle');
 
@@ -134,13 +139,31 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
           {lowIndex !== last && (
             <g>
               <circle cx={geo.xy[lowIndex][0]} cy={geo.xy[lowIndex][1]} r={4} fill="var(--series)" stroke="var(--paper)" strokeWidth={2} />
-              <text x={geo.xy[lowIndex][0]} y={geo.xy[lowIndex][1] + 18} textAnchor={labelAnchor(geo.xy[lowIndex][0])} className="fill-[var(--ink-soft)] text-[11px] font-semibold">
+              <text
+                x={geo.xy[lowIndex][0]}
+                y={geo.xy[lowIndex][1] + 18}
+                textAnchor={labelAnchor(geo.xy[lowIndex][0])}
+                stroke="var(--paper)"
+                strokeWidth={4}
+                strokeLinejoin="round"
+                paintOrder="stroke"
+                className="fill-[var(--ink-soft)] text-[11px] font-semibold"
+              >
                 Lowest {money(points[lowIndex].low)}
               </text>
             </g>
           )}
           <circle cx={geo.xy[last][0]} cy={geo.xy[last][1]} r={5} fill="var(--series)" stroke="var(--paper)" strokeWidth={2} />
-          <text x={geo.xy[last][0] - 8} y={geo.xy[last][1] - 12} textAnchor="end" className="fill-[var(--ink)] text-[12px] font-bold">
+          <text
+            x={geo.xy[last][0] - 8}
+            y={todayLabelY}
+            textAnchor="end"
+            stroke="var(--paper)"
+            strokeWidth={4}
+            strokeLinejoin="round"
+            paintOrder="stroke"
+            className="fill-[var(--ink)] text-[12px] font-bold"
+          >
             Today {money(points[last].low)}
           </text>
 

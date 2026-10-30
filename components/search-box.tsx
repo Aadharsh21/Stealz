@@ -110,7 +110,7 @@ export function SearchBox({
           autoComplete="off"
           spellCheck={false}
           enterKeyHint="search"
-          placeholder={large ? 'Try “Coach Tabby” or “white sneakers”' : 'Search a brand or item'}
+          placeholder="Search a brand or item"
           role="combobox"
           aria-expanded={showList}
           aria-controls={listId}
