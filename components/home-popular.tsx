@@ -8,13 +8,17 @@ export function HomePopular({ center = false }: { center?: boolean }) {
   const { location } = useLocation();
   const items = popularSearches(location?.country ?? 'US').slice(0, 5);
   return (
-    <div className={`mt-5 flex flex-wrap items-center gap-2 ${center ? 'justify-center' : ''}`}>
-      <span className="mr-1 text-[14px] text-muted">Try</span>
+    <div
+      className={`-mx-4 mt-5 flex items-center gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 ${
+        center ? 'sm:justify-center' : ''
+      }`}
+    >
+      <span className="mr-1 shrink-0 text-[14px] text-muted">Try</span>
       {items.map((q) => (
         <Link
           key={q}
           href={`/search?q=${encodeURIComponent(q)}`}
-          className="rounded-full bg-canvas px-3 py-1.5 text-[14px] font-medium text-ink-soft ring-1 ring-line hover:bg-paper hover:text-ink"
+          className="shrink-0 rounded-full bg-canvas px-3 py-1.5 text-[14px] font-medium text-ink-soft ring-1 ring-line hover:bg-paper hover:text-ink"
         >
           {q}
         </Link>
