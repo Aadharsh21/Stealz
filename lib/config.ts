@@ -13,6 +13,8 @@ export interface AppConfig {
   databaseUrl: string;
   resendApiKey: string;
   emailFrom: string;
+  /** Where usage warnings go (the site owner). */
+  ownerEmail: string;
   appUrl: string;
   cronSecret: string;
   cacheTtlHours: number;
@@ -35,6 +37,7 @@ export function config(): AppConfig {
     databaseUrl: (env.DATABASE_URL ?? env.POSTGRES_URL ?? '').trim(),
     resendApiKey: (env.RESEND_API_KEY ?? '').trim(),
     emailFrom: (env.EMAIL_FROM ?? '').trim(),
+    ownerEmail: (env.OWNER_EMAIL ?? '').trim(),
     appUrl: (env.APP_URL ?? (env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000')).replace(/\/$/, ''),
     cronSecret: (env.CRON_SECRET ?? '').trim(),
     cacheTtlHours: num(env.CACHE_TTL_HOURS, 6),

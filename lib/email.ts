@@ -107,3 +107,56 @@ ${p.storeUrl ? `<p style="margin:18px 0 0;font-size:13px"><a href="${escape(p.st
   const text = `${headline}: ${p.title}\n\nNow ${p.newPrice} at ${p.store}, down from ${p.oldPrice}.\n\nCompare all stores: ${p.productUrl}\n${p.storeUrl ? `Store: ${p.storeUrl}\n` : ''}\nStop alerts for this item: ${p.unsubscribePageUrl}`;
   return { subject: `${p.targetReached ? 'Target reached' : 'Price drop'}: ${p.title} is now ${p.newPrice}`.slice(0, 120), html, text, unsubscribeUrl: p.unsubscribeUrl };
 }
+
+export type UsageAlertKind = 'month-80' | 'month-100' | 'day-100' | 'plan-80' | 'plan-100';
+
+/** Warning to the site owner that live searches are running out. */
+export function usageEmail(p: {
+  kind: UsageAlertKind;
+  used: number;
+  limit: number;
+  left?: number;
+  renews?: string | null;
+  appUrl: string;
+}): { subject: string; html: string; text: string } {
+  const pct = p.limit > 0 ? Math.round((p.used / p.limit) * 100) : 100;
+  const renews = p.renews ? ` It renews on ${p.renews}.` : '';
+  const copy: Record<UsageAlertKind, { subject: string; lead: string }> = {
+    'month-80': {
+      subject: `Stealz has used ${pct}% of this month's searches`,
+      lead: `Stealz has used ${p.used} of its ${p.limit} live searches this month. At this pace it may run out before the limit resets.`,
+    },
+    'month-100': {
+      subject: "Stealz reached this month's search limit",
+      lead: `Stealz has used all ${p.limit} live searches allowed this month, so new searches are paused until the limit resets.`,
+    },
+    'day-100': {
+      subject: "Stealz reached today's search limit",
+      lead: `Stealz hit today's limit of ${p.limit} live searches, so new searches are paused until tomorrow. If this keeps happening, the site is getting busier than the daily limit allows.`,
+    },
+    'plan-80': {
+      subject: `Your SerpApi plan is ${pct}% used`,
+      lead: `Your SerpApi account has used ${p.used} of ${p.limit} searches this month${p.left != null ? `, with ${p.left} left` : ''}.${renews}`,
+    },
+    'plan-100': {
+      subject: 'Your SerpApi plan has run out of searches',
+      lead: `Your SerpApi account has no searches left this month, so Stealz can't fetch new prices.${renews}`,
+    },
+  };
+  const c = copy[p.kind];
+  const meanwhile =
+    'Until then, searches someone already ran in the last few hours still show results. New searches show a message saying live prices are paused.';
+  const fix =
+    'To allow more: upgrade your SerpApi plan, then raise MONTHLY_LIVE_SEARCHES and DAILY_LIVE_SEARCHES in Vercel (Settings, Environment Variables) and redeploy.';
+  const html = layout(
+    escape(c.subject),
+    `<p style="margin:0 0 14px;font-size:15px;line-height:1.55">${escape(c.lead)}</p>
+<p style="margin:0 0 14px;font-size:15px;line-height:1.55">${escape(meanwhile)}</p>
+<p style="margin:0 0 22px;font-size:15px;line-height:1.55">${escape(fix)}</p>
+${button('https://serpapi.com/dashboard', 'Open SerpApi dashboard')}
+<p style="margin:18px 0 0;font-size:13px"><a href="${escape(`${p.appUrl}/api/health`)}" style="color:#141312">See today's usage on Stealz</a></p>`,
+    'You get this because your email is set as OWNER_EMAIL for Stealz.',
+  );
+  const text = `${c.subject}\n\n${c.lead}\n\n${meanwhile}\n\n${fix}\n\nSerpApi dashboard: https://serpapi.com/dashboard\nUsage: ${p.appUrl}/api/health`;
+  return { subject: c.subject, html, text };
+}

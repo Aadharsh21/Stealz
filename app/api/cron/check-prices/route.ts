@@ -3,6 +3,7 @@ import { purgeExpiredCache } from '@/lib/cache';
 import { config, hasDatabase } from '@/lib/config';
 import { toAppError } from '@/lib/errors';
 import { runProduct } from '@/lib/product';
+import { checkPlanUsage } from '@/lib/usage';
 
 export const maxDuration = 60;
 
@@ -15,7 +16,8 @@ export async function GET(request: Request) {
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!hasDatabase()) return Response.json({ ok: true, skipped: 'no database' });
+  const plan = await checkPlanUsage().catch(() => null);
+  if (!hasDatabase()) return Response.json({ ok: true, skipped: 'no database', plan });
 
   const purged = await purgeExpiredCache().catch(() => 0);
   const due = await productsDueForCheck(config().maxAlertChecksPerRun);
@@ -37,5 +39,5 @@ export async function GET(request: Request) {
       if (e.code === 'budget') break; // out of live-search credits for today
     }
   }
-  return Response.json({ ok: true, checked: results.length, purged, results });
+  return Response.json({ ok: true, checked: results.length, purged, results, plan });
 }

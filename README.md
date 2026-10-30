@@ -47,6 +47,7 @@ In Vercel, go to **Project → Settings → Domains**, add the domain, and buy i
 | `RESEND_API_KEY`, `EMAIL_FROM` | Alert emails | |
 | `CRON_SECRET` | Daily price checks | |
 | `APP_URL` | Email links | Falls back to the Vercel production URL |
+| `OWNER_EMAIL` | Usage warnings | You get an email at 80% and 100% of the monthly search limit, when the daily limit is hit, and when the SerpApi plan runs low |
 | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` | Optional | Adds new eBay listings in the US |
 
 See `.env.example` for every option, including the search budget limits.

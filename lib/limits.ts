@@ -3,6 +3,7 @@
 
 import { config, hasDatabase } from './config';
 import { query } from './db';
+import { notifyOwner } from './usage';
 
 const memoryCounters = new Map<string, { count: number; resetAt: number }>();
 
@@ -67,13 +68,27 @@ export class BudgetError extends Error {
   }
 }
 
-/** Uses one paid live-search credit, or throws BudgetError when today's or this month's budget is spent. */
-export async function takeLiveCredit(): Promise<void> {
+/**
+ * Uses one paid live-search credit, or throws BudgetError when today's or this month's budget is
+ * spent. The owner gets an email at 80% of the month, and when either limit is reached.
+ */
+export async function takeLiveCredit(now = new Date()): Promise<void> {
   const c = config();
-  const day = await hitCounter(dayBucket(), c.dailyLiveSearches, 36 * 3600);
-  if (!day.ok) throw new BudgetError('day');
-  const month = await hitCounter(monthBucket(), c.monthlyLiveSearches, 32 * 86400);
-  if (!month.ok) throw new BudgetError('month');
+  const dayKey = now.toISOString().slice(0, 10);
+  const monthKey = now.toISOString().slice(0, 7);
+  const day = await hitCounter(dayBucket(now), c.dailyLiveSearches, 36 * 3600);
+  if (!day.ok) {
+    await notifyOwner('day-100', dayKey, { used: c.dailyLiveSearches, limit: c.dailyLiveSearches });
+    throw new BudgetError('day');
+  }
+  const month = await hitCounter(monthBucket(now), c.monthlyLiveSearches, 32 * 86400);
+  if (!month.ok) {
+    await notifyOwner('month-100', monthKey, { used: c.monthlyLiveSearches, limit: c.monthlyLiveSearches });
+    throw new BudgetError('month');
+  }
+  if (month.count >= Math.ceil(c.monthlyLiveSearches * 0.8)) {
+    await notifyOwner('month-80', monthKey, { used: month.count, limit: c.monthlyLiveSearches });
+  }
 }
 
 export async function liveCreditUsage(): Promise<{ today: number; month: number; dailyLimit: number; monthlyLimit: number }> {
