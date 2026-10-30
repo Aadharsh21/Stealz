@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { popularSearches } from '@/lib/suggestions';
 import { useLocation } from './location-provider';
 
-export function HomePopular() {
+export function HomePopular({ center = false }: { center?: boolean }) {
   const { location } = useLocation();
   const items = popularSearches(location?.country ?? 'US').slice(0, 5);
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2">
+    <div className={`mt-5 flex flex-wrap items-center gap-2 ${center ? 'justify-center' : ''}`}>
       <span className="mr-1 text-[14px] text-muted">Try</span>
       {items.map((q) => (
         <Link

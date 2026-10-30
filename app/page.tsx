@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { HomeLocationLine, HomePopular } from '@/components/home-popular';
-import { ReceiptExample } from '@/components/receipt-example';
+import { HomePicks } from '@/components/home-picks';
 import { SearchBox } from '@/components/search-box';
 import { Flag } from '@/components/flags';
 import { BellIcon, ReturnIcon, ShieldIcon, TagIcon, TruckIcon } from '@/components/icons';
@@ -45,23 +45,20 @@ const COUNTRIES_COPY = [
 export default function HomePage() {
   return (
     <>
-      <section className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.12fr_1fr] lg:gap-16">
-        <div>
-          <h1 className="type-wide type-hero text-[52px] leading-[0.95] sm:text-[68px] lg:text-[78px]">
-            Find the real steal.
-          </h1>
-          <p className="mt-5 max-w-[34rem] text-[18px] leading-relaxed text-ink-soft">
-            Search any bag, shoe or jacket. We check the stores, add shipping and tax for where you live, and show you who
-            gets it to your door first.
-          </p>
-          <div className="mt-8 max-w-[38rem]">
-            <SearchBox size="lg" />
-          </div>
-          <HomePopular />
-          <HomeLocationLine />
+      <section className="mx-auto max-w-4xl px-4 pb-14 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-20">
+        <h1 className="type-wide type-hero text-[54px] leading-[0.95] sm:text-[76px] lg:text-[88px]">Find the real steal.</h1>
+        <p className="mx-auto mt-5 max-w-[36rem] text-[18px] leading-relaxed text-ink-soft">
+          Search any bag, shoe or jacket. We check the stores, add shipping and tax for where you live, and show you who
+          gets it to your door first.
+        </p>
+        <div className="mx-auto mt-8 max-w-[40rem] text-left">
+          <SearchBox size="lg" />
         </div>
-        <ReceiptExample />
+        <HomePopular center />
+        <HomeLocationLine />
       </section>
+
+      <HomePicks />
 
       <section className="border-y border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">

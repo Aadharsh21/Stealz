@@ -124,3 +124,24 @@ test('model names matter more than category and color words when matching', asyn
   assert.ok(matchScore('swarovski millenia necklace pink', 'Swarovski Millenia Tennis necklace Octagon cut Purple') >= CLOSE_MATCH);
   assert.ok(matchScore('coach tabby shoulder bag 26', 'COACH Tabby Shoulder Bag 26 Women\'s') >= CLOSE_MATCH);
 });
+
+test('home picks need a photo, mix brands and skip other colors', async () => {
+  const { choosePicks } = await import('../lib/pick-select');
+  const listing = (store: string, price: number, extra: Record<string, unknown> = {}) =>
+    ({ ...offer(store, price), productKey: store, match: 1, ref: 'r', ...extra }) as never;
+  const group = (key: string, brand: string, image: string | undefined, listings: never[]) =>
+    ({ key, title: `${brand} ${key}`, brand, image, listings, bestTotal: 1, maxTotal: 1, storeCount: listings.length, match: 1, ref: key, multipleSources: false, onSale: false }) as never;
+  const picks = choosePicks(
+    [
+      group('a', 'Coach', 'https://img/a.jpg', [listing('COACH', 450), listing('Macys', 420)]),
+      group('b', 'Coach', 'https://img/b.jpg', [listing('COACH', 300)]),
+      group('c', 'Coach', 'https://img/c.jpg', [listing('COACH', 250)]),
+      group('d', 'Gucci', undefined, [listing('Gucci', 2000)]),
+      group('e', 'Prada', 'https://img/e.jpg', [listing('Prada', 1900, { colorNote: 'Green, not pink' })]),
+    ],
+    'USD',
+  );
+  assert.deepEqual(picks.map((p) => p.ref), ['a', 'b']);
+  assert.equal(picks[0].price, 420);
+  assert.equal(picks[0].store, 'Macys');
+});
