@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import { Cormorant_Garamond, Manrope } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@/lib/brand';
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <main id="main">{children}</main>
           <SiteFooter />
         </LocationProvider>
+        <Analytics />
       </body>
     </html>
   );
