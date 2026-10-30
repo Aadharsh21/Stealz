@@ -100,6 +100,9 @@ test('colors: a different color is called out, matching or unstated colors are n
   assert.equal(colorMismatch('coach tabby 26 black', 'Coach Tabby Shoulder Bag 26 in Black Denim'), null);
   assert.equal(colorMismatch('rose gold watch', 'Fossil watch rose gold tone'), null);
   assert.equal(colorMismatch('rose gold watch', 'Fossil watch silver tone'), 'Silver tone, not rose gold');
+  assert.equal(colorMismatch('millenia necklace pink', 'Millenia Tennis Necklace Octagon Cut Caramel Gold Tone'), 'Caramel, not pink');
+  assert.equal(colorMismatch('millenia necklace pink', 'MILLENIA NECKLACE OCTAGON CUT GOLD TONE PLATED'), null);
+  assert.equal(colorMismatch('michael kors jet set tote black', 'Michael Kors Jet Set Large Tote'), null);
   assert.equal(colorMismatch('emerald cut ring', 'Emerald cut ring white gold'), null);
   assert.equal(wantedColorText('swarovski millenia necklace', 'Millenia necklace Pink'), 'Millenia necklace Pink');
 });

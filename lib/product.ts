@@ -146,10 +146,13 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
 
   const stats = { fakes: 0 };
   const checked = markPriceOutliers(markLuxuryFloors(offersFromItems(raw.items, loc, now, stats)));
-  let offers = markColorMismatches(
-    checked.filter((o) => !isFlagged(o)),
-    wantedColorText(ref.q, ref.title, raw.details.title),
-  );
+  const wantedColor = wantedColorText(ref.q, ref.title, raw.details.title);
+  let offers = markColorMismatches(checked.filter((o) => !isFlagged(o)), wantedColor);
+  const notices = [...raw.notices];
+  if (offers.length > 0 && offers.every((o) => o.colorNote)) {
+    const [have, want] = (offers[0].colorNote as string).split(', not ');
+    notices.unshift(`Every store here lists this in ${have.toLowerCase()}, not ${want}. Go back to the results to find the ${want} one.`);
+  }
   const hiddenStores = stats.fakes + (checked.length - offers.length);
   if (offers.length === 0 && hiddenStores > 0) {
     throw new AppError("Every store selling this looks like a fake seller, so we're not showing it. Try searching again.", 404, 'not_found');
@@ -208,7 +211,7 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
     demo: raw.demo,
     cached: raw.cached,
     fetchedAt: raw.fetchedAt,
-    notices: raw.notices,
+    notices,
     alertsEnabled: hasDatabase() && emailEnabled() && !raw.demo,
     hiddenStores,
   };
