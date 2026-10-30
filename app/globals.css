@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* Stealz design tokens.
+   Denim ink on white, a clearance-sticker yellow reserved for "the steal",
+   and markdown red only for struck-through prices and discounts. */
+:root {
+  --paper: #ffffff;
+  --canvas: #f3f4f8;
+  --ink: #1d2340;
+  --ink-soft: #3b4263;
+  --muted: #5f6680;
+  --line: #e2e4ec;
+  --line-strong: #c7cbd9;
+  --sticker: #ffd829;
+  --sticker-ink: #1d2340;
+  --markdown: #d7352b;
+  --series: #3d5ad6;
+  --series-wash: rgba(61, 90, 214, 0.1);
+  --good: #0a8a0a;
+  --warning: #b97c00;
+  --critical: #c8322f;
+  --focus: #3d5ad6;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151a30;
+    --canvas: #1c2240;
+    --ink: #eef0f8;
+    --ink-soft: #c9cde0;
+    --muted: #9ea4be;
+    --line: #2a3156;
+    --line-strong: #3d4675;
+    --sticker: #ffd829;
+    --sticker-ink: #151a30;
+    --markdown: #ff7a6e;
+    --series: #6f86f2;
+    --series-wash: rgba(111, 134, 242, 0.12);
+    --good: #4cc38a;
+    --warning: #f2b632;
+    --critical: #ff7a6e;
+    --focus: #8ea2ff;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-sticker: var(--sticker);
+  --color-sticker-ink: var(--sticker-ink);
+  --color-markdown: var(--markdown);
+  --color-series: var(--series);
+  --color-good: var(--good);
+  --color-warning: var(--warning);
+  --color-critical: var(--critical);
+  --color-focus: var(--focus);
+  --font-sans: var(--font-archivo), "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--sticker);
+  color: var(--sticker-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Archivo's width axis carries the personality: wide for display, condensed for prices. */
+.type-wide {
+  font-variation-settings: "wdth" 125;
+  font-stretch: 125%;
+}
+.type-cond {
+  font-variation-settings: "wdth" 72;
+  font-stretch: 72%;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The clearance sticker: marks the single best price in a view. */
+.sticker {
+  background: var(--sticker);
+  color: var(--sticker-ink);
+  transform: rotate(-3deg);
+  box-shadow: 0 1px 0 rgba(29, 35, 64, 0.25);
+}
+
+/* Markdown pen: a was-price crossed out by hand. */
+.markdown {
+  position: relative;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.markdown::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 52%;
+  height: 2px;
+  background: var(--markdown);
+  border-radius: 2px;
+  transform: rotate(-8deg);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes stick {
+  0% {
+    transform: rotate(-14deg) scale(1.35);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-1deg) scale(0.96);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-3deg) scale(1);
+  }
+}
+.sticker-in {
+  animation: stick 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--canvas) 0px, var(--line) 80px, var(--canvas) 160px) var(--canvas);
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.3s ease-in-out infinite;
+  border-radius: 8px;
+}
