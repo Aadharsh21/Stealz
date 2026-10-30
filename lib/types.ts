@@ -180,6 +180,8 @@ export interface SearchResponse {
   notices: string[];
   /** How many listings were hidden for being used, pre-owned or refurbished. */
   hiddenUsed: number;
+  /** How many listings were hidden because they look like fakes or come from fake shops. */
+  hiddenFakes: number;
 }
 
 export interface HistoryPoint {
@@ -238,6 +240,8 @@ export interface ProductResponse {
   fetchedAt: string;
   notices: string[];
   alertsEnabled: boolean;
+  /** Stores left out because they look like fake sellers. */
+  hiddenStores: number;
 }
 
 export interface ApiError {

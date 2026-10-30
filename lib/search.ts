@@ -14,6 +14,7 @@ import { demoSearch } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { searchGoogleShopping } from './providers/serpapi';
 import type { ProviderItem } from './providers/types';
+import { isFlagged } from './scoring';
 import { normalize } from './text';
 
 export interface RawSearch {
@@ -121,8 +122,12 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
   const loc = await resolveLocation(input.location, input.tz);
   const raw = (await getSearchItems(query, loc, input.ip, { now })) as RawSearch;
   const built = buildListings(raw.items, query, loc, now);
-  const listings = flagSuspiciousListings(built.listings);
+  // Originals only: listings that look fake (copy shops, fake-shop domains, prices no genuine
+  // item sells for) are left out entirely, not just labelled.
+  const checked = flagSuspiciousListings(built.listings);
+  const listings = checked.filter((l) => !isFlagged(l));
   const hiddenUsed = built.hiddenUsed;
+  const hiddenFakes = built.hiddenFakes + (checked.length - listings.length);
   const groups = groupListings(listings);
   const response: SearchResponse = {
     query,
@@ -138,6 +143,7 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
     fetchedAt: raw.fetchedAt,
     notices: raw.notices,
     hiddenUsed,
+    hiddenFakes,
   };
   const background =
     raw.cached || raw.demo

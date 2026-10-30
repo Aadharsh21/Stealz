@@ -15,7 +15,7 @@ import { demoHistory, demoProduct } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { googleProduct } from './providers/serpapi';
 import { ProviderError } from './providers/types';
-import { isNotAnItem } from './stores';
+import { domainOf, isNotAnItem, looksCounterfeit } from './stores';
 import type { ProviderItem, ProviderProductResult } from './providers/types';
 import { cheapestOf, effectiveTotal, isFlagged } from './scoring';
 import { checkVisitorLimit, getSearchItems } from './search';
@@ -105,11 +105,15 @@ async function getProductItems(ref: ProductRef, loc: ResolvedLocation, ip: strin
 }
 
 /** Normalized offers for a product, one per store (the cheapest if a store lists it twice). */
-export function offersFromItems(items: ProviderItem[], loc: ResolvedLocation, now = new Date()): Offer[] {
+export function offersFromItems(items: ProviderItem[], loc: ResolvedLocation, now = new Date(), stats?: { fakes: number }): Offer[] {
   const base = offerContext(loc, now);
   const byStore = new Map<string, Offer>();
   for (const item of items) {
     if (!(item.price > 0) || isUsedItem(item) || isNotAnItem(item.title)) continue;
+    if (looksCounterfeit(item.store, item.title, domainOf(item.link))) {
+      if (stats) stats.fakes += 1;
+      continue;
+    }
     const offer = itemToOffer(item, base, loc.timeZone);
     const key = normalize(offer.store);
     const prev = byStore.get(key);
@@ -139,7 +143,13 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
   const loc = await resolveLocation(input.location, input.tz);
   const raw = await getProductItems(ref, loc, input.ip, input.fresh);
 
-  let offers = markPriceOutliers(markLuxuryFloors(offersFromItems(raw.items, loc, now)));
+  const stats = { fakes: 0 };
+  const checked = markPriceOutliers(markLuxuryFloors(offersFromItems(raw.items, loc, now, stats)));
+  let offers = checked.filter((o) => !isFlagged(o));
+  const hiddenStores = stats.fakes + (checked.length - offers.length);
+  if (offers.length === 0 && hiddenStores > 0) {
+    throw new AppError("Every store selling this looks like a fake seller, so we're not showing it. Try searching again.", 404, 'not_found');
+  }
   if (offers.length === 0) {
     throw new AppError('No stores have this item new right now. Try searching again.', 404, 'not_found');
   }
@@ -196,6 +206,7 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
     fetchedAt: raw.fetchedAt,
     notices: raw.notices,
     alertsEnabled: hasDatabase() && emailEnabled() && !raw.demo,
+    hiddenStores,
   };
 
   const background = raw.cached || raw.demo

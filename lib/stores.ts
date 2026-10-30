@@ -73,6 +73,19 @@ const RENTAL_STORES = ['pickle', 'shoppickle', 'renttherunway', 'nuuly', 'armoir
 const NOT_AN_ITEM =
   /\b(e-?book|guide series|buying guide|how to (identify|spot|authenticate|tell)|authentication (service|guide|certificate)|paper (shopping )?bags?|gift bags?|carrier bags?|dust ?bag only|box only|empty box|vol\.\s?\d+)\b/i;
 
+/** Shops that openly sell copies, judged by their name or web address. */
+const REPLICA_STORE = /(mastercopy|firstcopy|1stcopy|replica|replika|superfake|dupe|mirrorquality|aaacopy|aaaquality|copy)/;
+
+/** Listing titles that say the item is a copy. ("Inspired by" is left out: brands use it too.) */
+const REPLICA_TITLE =
+  /\b(master ?copy|first ?copy|1st ?copy|replicas?|super ?fake|mirror (quality|image|copy)|1:1 (quality|copy|replica)|a{3,}\+? (quality|grade|copy)|7a (quality|grade)|dupes?|knock ?offs?|counterfeits?|high copy|premium copy|copy bags?)\b/i;
+
+/** True for counterfeits: replica shops and listings that call themselves copies or dupes. */
+export function looksCounterfeit(store: string, title: string, domain?: string): boolean {
+  if (REPLICA_STORE.test(squash(store)) || (domain && REPLICA_STORE.test(squash(domain)))) return true;
+  return REPLICA_TITLE.test(title);
+}
+
 export function isNotAnItem(title: string): boolean {
   return NOT_AN_ITEM.test(title);
 }

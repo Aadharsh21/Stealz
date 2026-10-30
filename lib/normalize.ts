@@ -12,7 +12,7 @@ import type { OfferContext } from './offer';
 import { encodeRef } from './ref';
 import { markLuxuryFloors, markPriceOutliers } from './deal';
 import { cheapestOf, explainPick, fastestOf, rankOffers } from './scoring';
-import { isNotAnItem, isResaleStore, looksUsed } from './stores';
+import { domainOf, isNotAnItem, isResaleStore, looksCounterfeit, looksUsed } from './stores';
 import { exactTax } from './tax';
 import { CLOSE_MATCH, detectBrand, jaccard, keyTokens, matchScore, productKey, truncate } from './text';
 
@@ -71,6 +71,8 @@ export function itemToOffer(item: ProviderItem, base: OfferContext, timeZone: st
 export interface BuiltListings {
   listings: Listing[];
   hiddenUsed: number;
+  /** Listings dropped for being copies or replicas. */
+  hiddenFakes: number;
 }
 
 export function buildListings(items: ProviderItem[], query: string, loc: ResolvedLocation, now: Date = new Date()): BuiltListings {
@@ -78,8 +80,13 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
   const listings: Listing[] = [];
   const seen = new Set<string>();
   let hiddenUsed = 0;
+  let hiddenFakes = 0;
   for (const item of items) {
     if (!item.title || !(item.price > 0) || isNotAnItem(item.title)) continue;
+    if (looksCounterfeit(item.store, item.title, domainOf(item.link))) {
+      hiddenFakes += 1;
+      continue;
+    }
     if (isUsedItem(item)) {
       hiddenUsed += 1;
       continue;
@@ -109,7 +116,7 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
       googleLink: item.googleLink,
     });
   }
-  return { listings, hiddenUsed };
+  return { listings, hiddenUsed, hiddenFakes };
 }
 
 function tier(match: number): number {

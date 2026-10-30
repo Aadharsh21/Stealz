@@ -107,6 +107,11 @@ export function ResultsView() {
     );
   }
 
+  const hiddenParts = data
+    ? [data.hiddenUsed > 0 ? `${data.hiddenUsed} used or pre-owned` : '', data.hiddenFakes > 0 ? `${data.hiddenFakes} likely fake` : ''].filter(Boolean)
+    : [];
+  const hiddenNote = hiddenParts.length ? `${hiddenParts.join(' and ')} listings hidden` : '';
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:px-6">
       {(state.status === 'loading' || state.status === 'idle') && <ResultsSkeleton />}
@@ -138,12 +143,12 @@ export function ResultsView() {
               </button>
               . {taxPhrase(data)}.
             </p>
-            {(!data.demo || data.hiddenUsed > 0) && (
+            {(!data.demo || hiddenNote) && (
               <p className="mt-1 text-[13px] text-muted">
                 {data.demo
-                  ? `${data.hiddenUsed} used or pre-owned listings hidden`
+                  ? hiddenNote
                   : `Checked ${timeAgo(data.fetchedAt)} from ${data.sources.join(' and ') || COUNTRIES[data.location.country].name}${
-                      data.hiddenUsed > 0 ? `. ${data.hiddenUsed} used or pre-owned listings hidden` : ''
+                      hiddenNote ? `. ${hiddenNote}` : ''
                     }`}
               </p>
             )}

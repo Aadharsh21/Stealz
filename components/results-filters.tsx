@@ -111,7 +111,7 @@ export function ResultsFilters({
         <legend className="mb-1 text-[13px] font-semibold text-muted">Deals and sellers</legend>
         <Toggle label="On sale" checked={filters.onSale} onChange={(v) => set({ onSale: v })} />
         <Toggle label="Exact matches only" checked={filters.exactOnly} onChange={(v) => set({ exactOnly: v })} />
-        <Toggle label="Hide marketplace and unverified sellers" checked={filters.hideMarketplaces} onChange={(v) => set({ hideMarketplaces: v })} />
+        <Toggle label="Hide marketplace sellers" checked={filters.hideMarketplaces} onChange={(v) => set({ hideMarketplaces: v })} />
       </fieldset>
 
       {stores.length > 1 && (

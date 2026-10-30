@@ -242,6 +242,8 @@ export function ProductView() {
                 ? 'Totals add shipping and sales tax for your ZIP code.'
                 : `Prices include ${data.location.country === 'AE' ? 'VAT' : 'GST'}; totals add delivery fees.`}{' '}
               {data.demo ? 'Sample data.' : `Checked ${timeAgo(data.fetchedAt)}.`}
+              {data.hiddenStores > 0 &&
+                ` ${data.hiddenStores} ${data.hiddenStores === 1 ? 'store was' : 'stores were'} left out because they look like fake sellers.`}
             </p>
             <div className="mt-5">
               <OfferTable offers={data.offers} />

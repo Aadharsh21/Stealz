@@ -79,3 +79,14 @@ test('luxury bags far below the brand price are flagged; guides and rentals are 
   assert.equal(isResaleStore('Pickle'), true);
   assert.equal(isResaleStore('Nordstrom'), false);
 });
+
+test('copy shops and replica listings are recognized', async () => {
+  const { looksCounterfeit } = await import('../lib/stores');
+  assert.equal(looksCounterfeit('mastercopydubai.com', 'Women Coach Willow 24 Tote Bag'), true);
+  assert.equal(looksCounterfeit('Lune Collection', 'Coach Willow Tote first copy'), true);
+  assert.equal(looksCounterfeit('Shop', 'Chanel 22 Bag 1:1 Mirror Quality'), true);
+  assert.equal(looksCounterfeit('Amazon.com', 'Lululemon Belt Bag Dupe'), true);
+  assert.equal(looksCounterfeit('COACH', 'COACH Tabby Shoulder Bag 26 Inspired by Lilas'), false);
+  assert.equal(looksCounterfeit("Dillard's", 'Coach Willow Tote 24'), false);
+  assert.equal(looksCounterfeit('Nordstrom', 'Faux Fur Coat'), false);
+});
