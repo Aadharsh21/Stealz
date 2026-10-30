@@ -64,3 +64,7 @@ npm test
 ```
 
 Prices and delivery dates come from stores and Google Shopping and can change, so the site always tells shoppers to confirm with the store before buying.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
