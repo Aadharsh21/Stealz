@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stealz</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="https://www.gostealz.com" target="_blank" rel="noopener">
+    <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M16 3.5c-3 0-4.6 2.4-3.6 5.2" fill="none" stroke="#c9a86a" stroke-width="1.5" stroke-linecap="round"></path>
+      <path d="M11.5 10.5 16 7l4.5 3.5V27a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5z" fill="none" stroke="#c9a86a" stroke-width="1.7" stroke-linejoin="round"></path>
+      <circle cx="16" cy="11.6" r="1.4" fill="#c9a86a"></circle>
+      <path d="M14 18h4M14.6 21.5h2.8" stroke="#c9a86a" stroke-width="1.4" stroke-linecap="round"></path>
+    </svg>
+    <span>Stealz</span>
+  </a>
+  <button type="button" id="where" class="where" aria-expanded="false" aria-controls="place">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+    <span id="where-label">Locating…</span>
+  </button>
+</header>
+
+<form id="place" class="place" hidden>
+  <label class="field">
+    <span>Country</span>
+    <select id="country">
+      <option value="US">United States</option>
+      <option value="GB">United Kingdom</option>
+      <option value="AE">United Arab Emirates</option>
+      <option value="IN">India</option>
+    </select>
+  </label>
+  <label class="field" id="postal-field">
+    <span id="postal-label">ZIP code</span>
+    <input id="postal" autocomplete="postal-code" spellcheck="false">
+  </label>
+  <label class="field" id="city-field" hidden>
+    <span>City</span>
+    <select id="city">
+      <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option><option>Al Ain</option>
+      <option>Ajman</option><option>Ras Al Khaimah</option><option>Fujairah</option><option>Umm Al Quwain</option>
+    </select>
+  </label>
+  <p id="place-error" class="error-text" role="alert" hidden></p>
+  <div class="place-actions">
+    <button type="button" id="place-cancel" class="btn ghost">Cancel</button>
+    <button type="submit" id="place-save" class="btn primary">Save location</button>
+  </div>
+</form>
+
+<main id="main" aria-live="polite"></main>
+
+<script src="extract.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -26,6 +26,9 @@ export function SiteFooter() {
           <Link href="/coupons" className="font-medium text-ink-soft hover:text-ink">
             Coupons
           </Link>
+          <Link href="/extension" className="font-medium text-ink-soft hover:text-ink">
+            Chrome extension
+          </Link>
           <Link href="/watchlist" className="font-medium text-ink-soft hover:text-ink">
             Your watchlist
           </Link>

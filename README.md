@@ -14,6 +14,7 @@ Built with Next.js (App Router), React and Tailwind CSS, deployed on Vercel.
 - **On sale** page: real markdowns per category from Google Shopping's on-sale filter (one search per category and country a week, only when someone opens it)
 - **Coupons and offers** page: promo codes stores publish in their Google Shopping listings (collected from searches people already run, no extra cost), stores with sales on, and more stores to check
 - One-tap links to search the same item on more stores in each country (Trendyol and Brands For Less in the UAE, Selfridges and ASOS in the UK, and more)
+- **Chrome extension** (`extension/`): click it on any store's product page to see the same item at every store with real totals, the cheapest, savings versus that store, and other colors. It reads the page only when clicked and calls `POST /api/lookup`. After changing it, run `./scripts/package-extension.sh` to rebuild the download at `/stealz-extension.zip`
 - Price history and price-drop email alerts (no account needed)
 - Watchlist saved in the browser, shareable comparison links
 - Sample data mode, so the site works before any API key is added

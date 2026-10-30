@@ -3,7 +3,7 @@ import { HomeLocationLine, HomePopular } from '@/components/home-popular';
 import { HomePicks } from '@/components/home-picks';
 import { SearchBox } from '@/components/search-box';
 import { Flag } from '@/components/flags';
-import { BellIcon, ReturnIcon, ShieldIcon, TagIcon, TicketIcon, TruckIcon } from '@/components/icons';
+import { BellIcon, GlobeIcon, ReturnIcon, ShieldIcon, TagIcon, TicketIcon, TruckIcon } from '@/components/icons';
 import { CATEGORIES } from '@/lib/suggestions';
 
 const STEPS = [
@@ -67,7 +67,7 @@ export default function HomePage() {
       <HomePicks />
 
       <section aria-label="Deals" className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/sale" className="group rounded-2xl p-6 ring-1 ring-line transition-colors hover:bg-canvas sm:p-8">
             <TagIcon size={22} className="text-markdown" />
             <h2 className="type-wide mt-5 text-[30px] leading-tight group-hover:underline group-hover:underline-offset-4">On sale this week</h2>
@@ -80,6 +80,13 @@ export default function HomePage() {
             <h2 className="type-wide mt-5 text-[30px] leading-tight group-hover:underline group-hover:underline-offset-4">Coupons and offers</h2>
             <p className="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-soft">
               Promo codes stores publish, which stores have sales on, and more stores to check where you live.
+            </p>
+          </Link>
+          <Link href="/extension" className="group rounded-2xl p-6 ring-1 ring-line transition-colors hover:bg-canvas sm:p-8">
+            <GlobeIcon size={22} className="text-sticker" />
+            <h2 className="type-wide mt-5 text-[30px] leading-tight group-hover:underline group-hover:underline-offset-4">Stealz for Chrome</h2>
+            <p className="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-soft">
+              Click it on any store&apos;s product page to see the same item everywhere else, cheapest first, and in other colors.
             </p>
           </Link>
         </div>
