@@ -134,6 +134,12 @@ const BRANDS = [
   'Fjallraven', 'Rimowa', 'Roadster', 'HRX', 'Mochi', 'Bata', 'Red Tape', 'Woodland', 'Campus',
   'Max', 'Splash', 'Styli', 'Namshi', 'Nautica', 'Gant', 'Fred Perry', 'Ted Baker', 'Hackett',
   'Massimo Dutti', 'Bershka', 'Pull&Bear', 'Stradivarius', 'Victoria Beckham', 'Coperni', 'Telfar',
+  'Salvatore Ferragamo', 'Ferragamo', 'Balmain', 'Acne Studios', 'Amiri', 'Mackage', 'Moose Knuckles', 'Palm Angels',
+  'Vivienne Westwood', 'Strathberry', 'Dooney & Bourke', 'Donna Karan', 'DKNY', 'Moschino', 'Kenzo', 'Lanvin',
+  'Max Mara', 'Isabel Marant', 'Ganni', 'Zimmermann', 'Toteme', 'Khaite', 'Proenza Schouler', "Tod's", 'Bally',
+  'Montblanc', 'Sandro', 'Maje', 'AllSaints', 'Reformation', 'Cole Haan', 'Sorel', 'Veja', 'Axel Arigato',
+  'Common Projects', 'Autry', 'Saucony', 'Brooks', 'Mizuno', 'Fila', 'Onitsuka Tiger', 'Maison de Sabré',
+  'Kurt Geiger', 'Aquazzura', 'Manolo Blahnik', 'Rag & Bone', 'Vince Camuto',
 ];
 
 const BRAND_INDEX = BRANDS.map((name) => ({ name, norm: normalize(name) }))

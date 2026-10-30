@@ -36,7 +36,7 @@ function PickCard({ pick, index }: { pick: PickItem; index: number }) {
           </span>
         )}
       </div>
-      <p className="mt-3 truncate text-[13px] text-muted">{pick.brand ?? pick.store}</p>
+      <p className="mt-3 truncate text-[13px] text-muted">{pick.brand ?? '\u00a0'}</p>
       <h3 className="mt-0.5 line-clamp-2 min-h-[2.6em] text-[15px] font-semibold leading-snug group-hover:underline group-hover:underline-offset-4">
         {pick.title}
       </h3>
