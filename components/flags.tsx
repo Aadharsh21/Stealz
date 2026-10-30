@@ -23,6 +23,17 @@ export function Flag({ country, className = '' }: { country: CountryCode; classN
           )}
         </>
       )}
+      {country === 'GB' && (
+        <>
+          <rect width="30" height="20" fill="#012169" />
+          <path d="M0,0 L30,20 M30,0 L0,20" stroke="#fff" strokeWidth="4" />
+          <path d="M0,0 L30,20 M30,0 L0,20" stroke="#c8102e" strokeWidth="1.3" />
+          <rect x="12.5" width="5" height="20" fill="#fff" />
+          <rect y="7" width="30" height="6" fill="#fff" />
+          <rect x="13.5" width="3" height="20" fill="#c8102e" />
+          <rect y="8.2" width="30" height="3.6" fill="#c8102e" />
+        </>
+      )}
       {country === 'AE' && (
         <>
           <rect width="30" height="6.67" fill="#00732f" />

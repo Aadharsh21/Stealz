@@ -1,7 +1,7 @@
 // Shared types used by the API routes and the UI.
 
-export type CountryCode = 'US' | 'AE' | 'IN';
-export type CurrencyCode = 'USD' | 'AED' | 'INR';
+export type CountryCode = 'US' | 'GB' | 'AE' | 'IN';
+export type CurrencyCode = 'USD' | 'GBP' | 'AED' | 'INR';
 export type DataSource = 'google' | 'ebay' | 'demo';
 
 /** Where the shopper is. Everything except `country` is optional. */

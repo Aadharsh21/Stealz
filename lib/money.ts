@@ -1,6 +1,6 @@
 import type { CurrencyCode } from './types';
 
-const LOCALES: Record<CurrencyCode, string> = { USD: 'en-US', AED: 'en-AE', INR: 'en-IN' };
+const LOCALES: Record<CurrencyCode, string> = { USD: 'en-US', GBP: 'en-GB', AED: 'en-AE', INR: 'en-IN' };
 
 export function round2(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100;
@@ -20,12 +20,12 @@ export function parseMoney(input: unknown): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-/** Finds the first amount written with a currency marker, e.g. "$4.99 delivery" or "AED 10". */
+/** Finds the first amount written with a currency marker, e.g. "$4.99 delivery", "£3.95" or "AED 10". */
 export function findMoneyInText(text: string): number | null {
   const t = text.replace(/ /g, ' ');
-  const before = t.match(/(?:US\$|\$|₹|rs\.?\s?|inr\s?|aed\s?|usd\s?|د\.إ\s?)\s*(\d[\d,]*(?:\.\d{1,2})?)/i);
+  const before = t.match(/(?:US\$|\$|£|₹|rs\.?\s?|inr\s?|aed\s?|usd\s?|gbp\s?|د\.إ\s?)\s*(\d[\d,]*(?:\.\d{1,2})?)/i);
   if (before) return parseMoney(before[1]);
-  const after = t.match(/(\d[\d,]*(?:\.\d{1,2})?)\s*(?:aed|inr|usd|dirhams?|rupees?)\b/i);
+  const after = t.match(/(\d[\d,]*(?:\.\d{1,2})?)\s*(?:aed|inr|usd|gbp|dirhams?|rupees?)\b/i);
   if (after) return parseMoney(after[1]);
   return null;
 }
@@ -47,5 +47,5 @@ export function formatMoney(amount: number, currency: CurrencyCode, opts: { comp
 }
 
 export function currencySymbol(currency: CurrencyCode): string {
-  return currency === 'USD' ? '$' : currency === 'INR' ? '₹' : 'AED';
+  return currency === 'USD' ? '$' : currency === 'GBP' ? '£' : currency === 'INR' ? '₹' : 'AED';
 }

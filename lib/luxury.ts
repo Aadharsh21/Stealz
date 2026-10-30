@@ -29,8 +29,8 @@ const BAG_FLOORS_USD: Record<string, number> = {
   burberry: 600,
 };
 
-/** Rough conversion so the same floors work for UAE and Indian prices. */
-const FROM_USD: Record<CurrencyCode, number> = { USD: 1, AED: 3.67, INR: 83 };
+/** Rough conversion so the same floors work for UK, UAE and Indian prices. */
+const FROM_USD: Record<CurrencyCode, number> = { USD: 1, GBP: 0.78, AED: 3.67, INR: 83 };
 
 const BAG = /\b(bag|bags|tote|crossbody|cross body|shoulder|flap|satchel|clutch|backpack|hobo|bucket|baguette|saddle|purse|handbag|woc)\b|\bwallet on (a )?chain\b/;
 const SMALL_GOODS = /\b(wallet|card holder|cardholder|card case|key pouch|key holder|coin purse|pouch)\b/;

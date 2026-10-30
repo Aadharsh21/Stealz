@@ -17,7 +17,7 @@ interface Body {
   tz?: string;
 }
 
-const CURRENCIES: CurrencyCode[] = ['USD', 'AED', 'INR'];
+const CURRENCIES: CurrencyCode[] = ['USD', 'GBP', 'AED', 'INR'];
 
 export async function POST(request: Request) {
   try {

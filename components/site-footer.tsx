@@ -23,7 +23,7 @@ export function SiteFooter() {
           <Link href="/watchlist" className="font-medium text-ink-soft hover:text-ink">
             Your watchlist
           </Link>
-          <span className="text-muted">US, UAE and India</span>
+          <span className="text-muted">US, UK, UAE and India</span>
         </nav>
       </div>
     </footer>

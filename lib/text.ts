@@ -111,7 +111,7 @@ export function productKey(country: string, title: string, googleProductId?: str
   return `${country}:t:${hash32(sig || normalize(title))}`;
 }
 
-// Brands people commonly search for in clothing, bags and accessories (US, UAE, India).
+// Brands people commonly search for in clothing, bags and accessories (US, UK, UAE, India).
 const BRANDS = [
   'Coach', 'Coach Outlet', 'Michael Kors', 'MICHAEL Michael Kors', 'Kate Spade', 'Kate Spade New York', 'Tory Burch',
   'Marc Jacobs', 'Longchamp', 'Furla', 'MCM', 'Guess', 'Fossil', 'Steve Madden', 'Aldo', 'Charles & Keith',
@@ -141,6 +141,8 @@ const BRANDS = [
   'Common Projects', 'Autry', 'Saucony', 'Brooks', 'Mizuno', 'Fila', 'Onitsuka Tiger', 'Maison de Sabré',
   'Kurt Geiger', 'Aquazzura', 'Manolo Blahnik', 'Rag & Bone', 'Vince Camuto', 'Alexander Wang', 'Kay Unger',
   'Mac Duggal', 'La DoubleJ', 'Self-Portrait', 'Staud', 'Cult Gaia', 'Ulla Johnson', 'Veronica Beard', 'Sezane',
+  'Barbour', 'Reiss', 'Paul Smith', 'Stella McCartney', 'Radley', 'Anya Hindmarch', 'Aspinal of London', 'Belstaff',
+  'Superdry', 'Whistles', 'Russell & Bromley', 'Boden', 'Joules',
 ];
 
 const BRAND_INDEX = BRANDS.map((name) => ({ name, norm: normalize(name) }))

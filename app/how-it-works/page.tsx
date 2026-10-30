@@ -39,7 +39,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
           {US_RATES_AS_OF}), including the clothing exemptions in Pennsylvania, New Jersey, Minnesota and Vermont, and the
           partial ones in New York, Massachusetts and Rhode Island. Your exact rate can differ slightly by city.
         </p>
-        <p>Prices in the UAE already include 5% VAT, and prices in India already include GST.</p>
+        <p>Prices in the UK already include VAT, prices in the UAE include 5% VAT, and prices in India include GST.</p>
       </>
     ),
   },
@@ -47,7 +47,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     title: 'Delivery dates',
     body: (
       <p>
-        We read each store&apos;s delivery estimate for your ZIP code, PIN code or city (&ldquo;Free delivery by Mon&rdquo;,
+        We read each store&apos;s delivery estimate for your ZIP code, postcode, PIN code or city (&ldquo;Free delivery by Mon&rdquo;,
         &ldquo;Arrives Nov 3–5&rdquo;) and turn it into dates. If a store gives no estimate, we say so rather than guess.
       </p>
     ),

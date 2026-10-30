@@ -20,12 +20,14 @@ const COMMON = [
 
 const BY_COUNTRY: Record<CountryCode, string[]> = {
   US: ['Coach Tabby Shoulder Bag 26', "Levi's 501 Original Fit Jeans", 'Ray-Ban Wayfarer Sunglasses', 'New Balance 550', 'The North Face Nuptse Jacket', 'Lululemon Align Leggings'],
+  GB: ['Mulberry Bayswater Bag', 'Barbour Beaufort Wax Jacket', 'Adidas Samba OG', 'Dr. Martens 1460 Boots', 'Longchamp Le Pliage Large Tote', 'The North Face Nuptse Jacket'],
   AE: ['Charles & Keith Koa Shoulder Bag', 'Michael Kors Parker Watch', 'Adidas Samba OG', 'Coach Willow Tote', 'Ray-Ban Aviator Classic', 'Swarovski Millenia Necklace'],
   IN: ["Levi's 511 Slim Jeans", 'Fossil Grant Chronograph Watch', 'Nike Dunk Low', 'Hidesign Leather Tote', 'Titan Raga Watch', 'Ray-Ban Aviator Classic'],
 };
 
 const EXTRA: Record<CountryCode, string[]> = {
   US: ['Steve Madden Platform Sneakers', 'Sam Edelman Hazel Pumps'],
+  GB: ['Mulberry Lily Bag', 'Barbour Bedale Wax Jacket', 'Stone Island Crewneck Sweatshirt', 'Ted Baker Icon Tote', 'AllSaints Leather Biker Jacket', 'Clarks Wallabee Shoes', 'Kurt Geiger Kensington Bag'],
   AE: ['Level Shoes Sneakers', 'Michael Kors Jet Set Crossbody', 'Coach Tabby Shoulder Bag 20'],
   IN: ['Hidesign Leather Tote', 'Titan Raga Watch', 'Fastrack Sunglasses', 'Allen Solly Formal Shirt', 'Lavie Handbag', 'Caprese Satchel', 'Manyavar Kurta', 'Puma RS-X'],
 };

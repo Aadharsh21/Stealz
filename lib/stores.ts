@@ -50,6 +50,13 @@ const KNOWN_RETAILERS = [
   'crocs', 'skechers', 'clarks', 'stevemadden', 'samedelman', 'charleskeith', 'charlesandkeith', 'rayban', 'oakley',
   'fossil', 'swarovski', 'pandora', 'tiffany', 'gucci', 'prada', 'louisvuitton', 'dior', 'burberry', 'balenciaga',
   'saintlaurent', 'ysl', 'bottegaveneta', 'fendi', 'givenchy', 'valentino', 'versace', 'mcm', 'marcjacobs',
+  // UK
+  'selfridges', 'harrods', 'johnlewis', 'libertylondon', 'flannels', 'endclothing', 'brownsfashion', 'houseoffraser',
+  'marksandspencer', 'marksspencer', 'debenhams', 'fenwick', 'sportsdirect', 'footasylum', 'schuh', 'officeshoes',
+  'kurtgeiger', 'russellandbromley', 'riverisland', 'reiss', 'allsaints', 'tedbaker', 'whistles', 'boden', 'hobbs',
+  'karenmillen', 'mulberry', 'barbour', 'stoneisland', 'superdry', 'arket', 'tkmaxx', 'newlook', 'boohoo',
+  'prettylittlething', 'littlewoods', 'argos', 'goldsmiths', 'ernestjones', 'beaverbrooks', 'watchshop',
+  'mainlinemenswear', 'oipolloi', 'hipstore', 'radley', 'aspinal', 'paulsmith',
   // UAE
   'namshi', 'noon', 'ounass', '6thstreet', 'levelshoes', 'harveynichols', 'centrepoint', 'maxfashion', 'splash',
   'brandsforless', 'tryano', 'thatconceptstore', 'sharafdg', 'carrefour', 'luluhypermarket',
@@ -58,6 +65,9 @@ const KNOWN_RETAILERS = [
   'reliancetrends', 'bewakoof', 'thesouledstore', 'souledstore', 'fabindia', 'libas', 'biba', 'bata', 'metroshoes',
   'hidesign', 'caprese', 'lavie', 'baggit', 'titan', 'fastrack', 'tanishq', 'caratlane', 'lenskart', 'croma',
 ];
+
+/** Store names too short or common to match as a prefix ("Next", "END.", "size?"), matched exactly. */
+const KNOWN_EXACT = ['next', 'end', 'very', 'office', 'size', 'cos'];
 
 /** Website names that clearly aren't shops, typical of hijacked domains reused by fake stores. */
 const NON_RETAIL =
@@ -111,7 +121,7 @@ export function isLowTrustStore(store: string, domain?: string): boolean {
 
 export function isKnownRetailer(store: string, domain?: string): boolean {
   const names = [squash(store), domain ? squash(domain.replace(/^www\./, '').split('.')[0] ?? '') : ''].filter(Boolean);
-  return names.some((n) => KNOWN_RETAILERS.some((k) => n === k || (k.length >= 4 && n.startsWith(k))));
+  return names.some((n) => KNOWN_EXACT.includes(n) || KNOWN_RETAILERS.some((k) => n === k || (k.length >= 4 && n.startsWith(k))));
 }
 
 /**

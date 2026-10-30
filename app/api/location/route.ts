@@ -15,14 +15,14 @@ export async function GET(request: Request) {
       const postal = params.get('postal');
       const cfg = COUNTRIES[loc.country];
       if (postal && !loc.postalCode) {
-        return Response.json({ valid: false, error: `Enter a ${cfg.postal?.length ?? ''}-digit ${cfg.postal?.label ?? 'postal code'}.` }, { status: 400 });
+        return Response.json({ valid: false, error: cfg.postal?.invalid ?? 'Enter a valid postal code.' }, { status: 400 });
       }
       const resolved = await resolveLocation({ ...loc, source: loc.source === 'gps' ? 'gps' : 'manual' }, tz);
       const found = !postal || Boolean(resolved.city || resolved.region);
       return Response.json(
         found
           ? { valid: true, location: resolved }
-          : { valid: false, error: `We couldn't find that ${cfg.postal?.label ?? 'postal code'}. Check it and try again.` },
+          : { valid: false, error: `We couldn't find that ${cfg.postal?.noun ?? 'postal code'}. Check it and try again.` },
         { status: found ? 200 : 404, headers: { 'cache-control': 'no-store' } },
       );
     }

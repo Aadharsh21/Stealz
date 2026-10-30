@@ -136,6 +136,16 @@ const STORES: Record<CountryCode, DemoStore[]> = {
     { name: 'Shopbop', domain: 'shopbop.com', bias: 1.01, days: [2, 4], returns: 'Free returns', rating: 4.5, style: 'by', saleChance: 0.2 },
     { name: 'Walmart - Seller', domain: 'walmart.com', bias: 0.9, fee: 6.99, days: [4, 8], returns: '30-day returns', rating: 3.9, style: 'get', saleChance: 0.7 },
   ],
+  GB: [
+    { name: 'Selfridges', domain: 'selfridges.com', bias: 1.03, freeOver: 50, fee: 4.95, days: [2, 4], returns: 'Free 28-day returns', rating: 4.5, style: 'dayfirst', saleChance: 0.2 },
+    { name: 'John Lewis', domain: 'johnlewis.com', bias: 1, freeOver: 50, fee: 4.5, days: [2, 5], returns: '35-day returns', rating: 4.6, style: 'by', saleChance: 0.3 },
+    { name: 'ASOS', domain: 'asos.com', bias: 0.95, freeOver: 35, fee: 4.5, days: [2, 4], returns: 'Free 28-day returns', rating: 4.3, style: 'by', saleChance: 0.5 },
+    { name: 'END.', domain: 'endclothing.com', bias: 1, freeOver: 150, fee: 5, days: [2, 4], returns: '14-day returns', rating: 4.4, style: 'dayfirst', saleChance: 0.3 },
+    { name: 'Amazon.co.uk', domain: 'amazon.co.uk', bias: 0.94, days: [1, 2], returns: 'Free 30-day returns', rating: 4.4, style: 'get', saleChance: 0.4 },
+    { name: 'Flannels', domain: 'flannels.com', bias: 0.98, freeOver: 100, fee: 4.99, days: [3, 5], returns: '28-day returns', rating: 4.1, style: 'range', saleChance: 0.35 },
+    { name: 'Harrods', domain: 'harrods.com', bias: 1.06, fee: 6.95, days: [2, 4], returns: '28-day returns', rating: 4.5, style: 'dayfirst', saleChance: 0.15 },
+    { name: 'Schuh', domain: 'schuh.co.uk', bias: 0.97, freeOver: 30, fee: 3.99, days: [2, 4], returns: '365-day returns', rating: 4.5, style: 'get', saleChance: 0.3, cats: ['sneaker', 'boot', 'heel'] },
+  ],
   AE: [
     { name: 'Namshi', domain: 'namshi.com', bias: 0.98, freeOver: 100, fee: 10, days: [1, 3], returns: 'Free 14-day returns', rating: 4.4, style: 'dayfirst', saleChance: 0.4 },
     { name: 'Ounass', domain: 'ounass.ae', bias: 1.05, days: [1, 2], returns: 'Free returns', rating: 4.6, style: 'get', saleChance: 0.2 },
@@ -159,10 +169,10 @@ const STORES: Record<CountryCode, DemoStore[]> = {
 
 // ---------- price helpers ----------
 
-const FX: Record<CountryCode, number> = { US: 1, AE: 3.85, IN: 86 };
+const FX: Record<CountryCode, number> = { US: 1, GB: 0.8, AE: 3.85, IN: 86 };
 
 function nicePrice(value: number, country: CountryCode): number {
-  if (country === 'US') {
+  if (country === 'US' || country === 'GB') {
     if (value < 200) return Math.max(9.99, Math.round(value) - 0.01);
     return Math.round(value / 5) * 5;
   }
@@ -209,11 +219,11 @@ export interface DemoProduct {
 function brandStore(brand: string, country: CountryCode): DemoStore {
   const slug = normalize(brand).replace(/\s+/g, '');
   return {
-    name: country === 'US' ? brand : `${brand} ${country === 'AE' ? 'UAE' : 'India'}`,
+    name: country === 'US' ? brand : `${brand} ${COUNTRIES[country].short}`,
     domain: `${slug}.com`,
     bias: 1,
-    days: country === 'US' ? [2, 4] : [3, 5],
-    returns: country === 'US' ? 'Free 30-day returns' : '14-day returns',
+    days: country === 'US' || country === 'GB' ? [2, 4] : [3, 5],
+    returns: country === 'US' ? 'Free 30-day returns' : country === 'GB' ? '28-day returns' : '14-day returns',
     rating: 4.6,
     style: country === 'US' ? 'by' : 'dayfirst',
     saleChance: 0.3,

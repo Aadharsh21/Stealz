@@ -79,8 +79,10 @@ async function findLocation(loc: ResolvedLocation): Promise<string | undefined> 
   const inCountry = (l: SerpLocation) => l.country_code?.toUpperCase() === loc.country;
   const region = loc.region?.toLowerCase();
   if (loc.postalCode) {
-    const hits = (await lookupLocations(loc.postalCode)).filter(inCountry);
-    const exact = hits.find((l) => l.target_type === 'Postal Code' && l.name === loc.postalCode);
+    // Google targets UK postcodes by district ("SW1A"), not the full postcode.
+    const code = loc.country === 'GB' ? loc.postalCode.slice(0, -3) : loc.postalCode;
+    const hits = (await lookupLocations(code)).filter(inCountry);
+    const exact = hits.find((l) => l.target_type === 'Postal Code' && l.name.replace(/\s+/g, '').toUpperCase() === code);
     if (exact) return exact.canonical_name;
   }
   if (loc.city) {

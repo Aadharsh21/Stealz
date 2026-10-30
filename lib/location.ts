@@ -1,9 +1,9 @@
 // Shopper location: detection from Vercel's IP headers, validation of what the browser sends,
-// and postal-code lookups (US ZIP / India PIN) to fill in the city and state.
+// and postal-code lookups (US ZIP / UK postcode / India PIN) to fill in the city and state.
 
 import type { CountryCode, ResolvedLocation, UserLocation } from './types';
 import {
-  COUNTRIES, UAE_CITIES, isCountryCode, regionCodeFromName, regionName, timeZoneFor,
+  COUNTRIES, UAE_CITIES, compactPostal, formatPostal, isCountryCode, regionCodeFromName, regionName, timeZoneFor,
 } from './countries';
 import { cacheGet, cacheSet } from './cache';
 
@@ -45,7 +45,8 @@ export function detectFromHeaders(headers: Headers): DetectedLocation {
   }
   const regionCode = clean(headers.get('x-vercel-ip-country-region'), 6)?.toUpperCase();
   const cityHeader = headers.get('x-vercel-ip-city');
-  const postal = clean(headers.get('x-vercel-ip-postal-code'), 10);
+  const rawPostal = clean(headers.get('x-vercel-ip-postal-code'), 10);
+  const postal = rawPostal ? compactPostal(rawPostal) : undefined;
   const cfg = COUNTRIES[country];
   const location: UserLocation = {
     country,
@@ -62,10 +63,12 @@ export function detectFromHeaders(headers: Headers): DetectedLocation {
 
 /** Validates location fields sent by the browser as query parameters. */
 export function locationFromParams(params: URLSearchParams): UserLocation {
-  const rawCountry = params.get('country')?.toUpperCase();
+  const upper = params.get('country')?.toUpperCase();
+  const rawCountry = upper === 'UK' ? 'GB' : upper;
   const country: CountryCode = isCountryCode(rawCountry) ? rawCountry : 'US';
   const cfg = COUNTRIES[country];
-  const postal = clean(params.get('postal'), 10)?.replace(/\s+/g, '');
+  const typedPostal = clean(params.get('postal'), 10);
+  const postal = typedPostal ? compactPostal(typedPostal) : undefined;
   const source = params.get('source');
   let regionCode = clean(params.get('regionCode'), 6)?.toUpperCase();
   const region = clean(params.get('region'));
@@ -94,6 +97,13 @@ export function describeLocation(loc: UserLocation): string {
     if (!place && loc.postalCode) return `PIN ${loc.postalCode}`;
     return [place, loc.postalCode].filter(Boolean).join(' ') || cfg.name;
   }
+  if (loc.country === 'GB') {
+    const place = loc.city ?? loc.region;
+    const postcode = loc.postalCode ? formatPostal('GB', loc.postalCode) : undefined;
+    if (!place && postcode) return `Postcode ${postcode}`;
+    if (place && postcode) return `${place} ${postcode}`;
+    return place ? `${place}, UK` : cfg.name;
+  }
   const place = loc.city ?? loc.region;
   return place ? `${place}, UAE` : cfg.name;
 }
@@ -111,13 +121,23 @@ interface PostalInfo {
   lng?: number;
 }
 
+/** Fetches JSON. A 404 means the code doesn't exist and comes back as null; other errors throw. */
 async function fetchJson(url: string, timeoutMs = 3500): Promise<unknown> {
   const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), headers: { accept: 'application/json' } });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
-/** Looks up a US ZIP or Indian PIN code. Results are cached for 30 days. */
+/** A town for a UK postcode: "London" for every London borough, otherwise the council area. */
+export function ukTown(region?: string | null, district?: string | null): string | undefined {
+  if (region === 'London') return 'London';
+  if (!district) return undefined;
+  const town = district.replace(/^City of\s+/i, '').replace(/,\s*City of$/i, '').replace(/\s+City$/i, '').trim();
+  return town || undefined;
+}
+
+/** Looks up a US ZIP, UK postcode or Indian PIN code. Results are cached for 30 days. */
 export async function lookupPostal(country: CountryCode, postal: string): Promise<PostalInfo | null> {
   if (country === 'AE') return null;
   const key = `postal:v1:${country}:${postal}`;
@@ -129,8 +149,8 @@ export async function lookupPostal(country: CountryCode, postal: string): Promis
     if (country === 'US') {
       const data = (await fetchJson(`https://api.zippopotam.us/us/${postal}`)) as {
         places?: { 'place name'?: string; state?: string; 'state abbreviation'?: string; latitude?: string; longitude?: string }[];
-      };
-      const p = data.places?.[0];
+      } | null;
+      const p = data?.places?.[0];
       if (p) {
         info = {
           city: p['place name'],
@@ -138,6 +158,28 @@ export async function lookupPostal(country: CountryCode, postal: string): Promis
           regionCode: p['state abbreviation'],
           lat: num(p.latitude),
           lng: num(p.longitude),
+        };
+      }
+    } else if (country === 'GB') {
+      // postcodes.io: free, no key, Ordnance Survey and ONS data.
+      const data = (await fetchJson(`https://api.postcodes.io/postcodes/${encodeURIComponent(postal)}`)) as {
+        result?: {
+          country?: string | null;
+          region?: string | null;
+          admin_district?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+        } | null;
+      } | null;
+      const r = data?.result;
+      if (r) {
+        const nation = r.country ?? undefined;
+        info = {
+          city: ukTown(r.region, r.admin_district),
+          region: nation,
+          regionCode: regionCodeFromName('GB', nation),
+          lat: r.latitude ?? undefined,
+          lng: r.longitude ?? undefined,
         };
       }
     } else {

@@ -65,7 +65,7 @@ function UnsupportedNotice() {
   return (
     <div className="border-b border-line bg-canvas">
       <p className="mx-auto max-w-6xl px-4 py-2 text-[13px] text-ink-soft sm:px-6">
-        Stealz covers the US, the UAE and India for now, so you&apos;re seeing US prices.{' '}
+        Stealz covers the US, the UK, the UAE and India for now, so you&apos;re seeing US prices.{' '}
         <button type="button" onClick={openPicker} className="font-semibold text-ink underline underline-offset-2">
           Choose a location
         </button>

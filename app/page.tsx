@@ -29,6 +29,12 @@ const COUNTRIES_COPY = [
     tax: 'Sales tax estimated for your ZIP code, including clothing exemptions in states like NY, PA and NJ.',
   },
   {
+    code: 'GB' as const,
+    name: 'United Kingdom',
+    stores: 'Selfridges, John Lewis, ASOS, END., Amazon.co.uk and more',
+    tax: 'Prices already include VAT, so totals add only delivery fees.',
+  },
+  {
     code: 'AE' as const,
     name: 'United Arab Emirates',
     stores: 'Namshi, noon, Ounass, 6thStreet, Amazon.ae and more',
@@ -86,11 +92,11 @@ export default function HomePage() {
             <h2 className="type-wide text-[28px] font-extrabold tracking-[-0.03em]">Totals for where you live</h2>
             <p className="mt-3 max-w-[40ch] text-[16px] leading-relaxed text-ink-soft">
               A cheaper sticker price can cost more once shipping and tax are added. Stealz works out the full amount for
-              your address in three countries.
+              your address in four countries.
             </p>
             <ul className="mt-6 space-y-3 text-[15px] text-ink-soft">
               <li className="flex gap-3">
-                <TruckIcon className="mt-0.5 shrink-0 text-ink" /> Delivery dates for your ZIP, PIN code or city
+                <TruckIcon className="mt-0.5 shrink-0 text-ink" /> Delivery dates for your ZIP code, postcode, PIN code or city
               </li>
               <li className="flex gap-3">
                 <ShieldIcon className="mt-0.5 shrink-0 text-ink" /> New items only. Used and resale listings are filtered out

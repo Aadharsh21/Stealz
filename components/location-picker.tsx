@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { CountryCode, ResolvedLocation } from '@/lib/types';
-import { COUNTRIES, COUNTRY_CODES, UAE_CITIES } from '@/lib/countries';
+import { COUNTRIES, COUNTRY_CODES, UAE_CITIES, compactPostal, formatPostal, isCountryCode } from '@/lib/countries';
 import { browserTimeZone, getJson, ApiClientError } from '@/lib/client';
 import { Flag } from './flags';
 import { LocateIcon, SpinnerIcon, XIcon } from './icons';
@@ -49,7 +49,7 @@ export function LocationPicker() {
     if (!dialog) return;
     if (pickerOpen && !dialog.open) {
       setCountry(location?.country ?? 'US');
-      setPostal(location?.postalCode ?? '');
+      setPostal(location?.postalCode ? formatPostal(location.country, location.postalCode) : '');
       setCity(location?.country === 'AE' && location.city ? location.city : 'Dubai');
       setError(null);
       dialog.showModal();
@@ -60,11 +60,19 @@ export function LocationPicker() {
 
   const cfg = COUNTRIES[country];
 
+  function pickCountry(c: CountryCode) {
+    setCountry(c);
+    // Keep the saved code when switching back to its country; a ZIP code means nothing in the UK.
+    setPostal(location?.country === c && location.postalCode ? formatPostal(c, location.postalCode) : '');
+    setError(null);
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (cfg.postal && !cfg.postal.pattern.test(postal.trim())) {
-      setError(`Enter a ${cfg.postal.length}-digit ${cfg.postal.label}.`);
+    const typed = compactPostal(postal);
+    if (cfg.postal && !cfg.postal.pattern.test(typed)) {
+      setError(cfg.postal.invalid);
       return;
     }
     setBusy('save');
@@ -72,7 +80,7 @@ export function LocationPicker() {
       const resolved = await resolve(
         country === 'AE'
           ? { country, city, source: 'manual' }
-          : { country, postal: postal.trim(), source: 'manual' },
+          : { country, postal: typed, source: 'manual' },
       );
       setLocation(resolved);
       closePicker();
@@ -98,13 +106,15 @@ export function LocationPicker() {
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
           );
           const code = geo.countryCode?.toUpperCase();
-          if (code !== 'US' && code !== 'AE' && code !== 'IN') {
-            setError('Stealz covers the US, the UAE and India right now. Pick one of those to see prices.');
+          if (!isCountryCode(code)) {
+            setError('Stealz covers the US, the UK, the UAE and India right now. Pick one of those to see prices.');
             return;
           }
+          // Only a complete code is sent; a partial one (like "SW1A") would be rejected.
+          const postcode = geo.postcode ? compactPostal(geo.postcode) : undefined;
           const resolved = await resolve({
             country: code,
-            postal: geo.postcode?.replace(/\s+/g, ''),
+            postal: postcode && COUNTRIES[code].postal?.pattern.test(postcode) ? postcode : undefined,
             city: geo.city || geo.locality,
             region: geo.principalSubdivision,
             regionCode: geo.principalSubdivisionCode?.split('-')[1],
@@ -120,7 +130,7 @@ export function LocationPicker() {
       },
       () => {
         setBusy(null);
-        setError(`Location access is off. Enter your ${cfg.postal?.label ?? 'city'} instead.`);
+        setError(`Location access is off. Enter your ${cfg.postal?.noun ?? 'city'} instead.`);
       },
       { timeout: 10_000, maximumAge: 10 * 60_000 },
     );
@@ -153,15 +163,12 @@ export function LocationPicker() {
 
         <fieldset className="mt-5">
           <legend className="sr-only">Country</legend>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {COUNTRY_CODES.map((c) => (
               <button
                 key={c}
                 type="button"
-                onClick={() => {
-                  setCountry(c);
-                  setError(null);
-                }}
+                onClick={() => pickCountry(c)}
                 aria-pressed={country === c}
                 className={`flex h-11 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold ring-1 transition-colors ${
                   country === c ? 'bg-ink text-paper ring-ink' : 'bg-paper text-ink ring-line-strong hover:bg-canvas'
@@ -180,8 +187,16 @@ export function LocationPicker() {
               <span className="text-[13px] font-semibold text-ink-soft">{cfg.postal.label}</span>
               <input
                 value={postal}
-                onChange={(e) => setPostal(e.target.value.replace(/[^\d]/g, '').slice(0, cfg.postal?.length ?? 6))}
-                inputMode="numeric"
+                onChange={(e) =>
+                  setPostal(
+                    cfg.postal?.numeric
+                      ? e.target.value.replace(/[^\d]/g, '').slice(0, cfg.postal.length)
+                      : e.target.value.toUpperCase().replace(/[^A-Z\d ]/g, '').replace(/\s{2,}/g, ' ').slice(0, cfg.postal?.length ?? 8),
+                  )
+                }
+                inputMode={cfg.postal.numeric ? 'numeric' : 'text'}
+                autoCapitalize={cfg.postal.numeric ? undefined : 'characters'}
+                spellCheck={false}
                 autoComplete="postal-code"
                 placeholder={cfg.postal.placeholder}
                 className="mt-1.5 h-12 w-full rounded-xl bg-paper px-4 text-[16px] ring-1 ring-line-strong placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-focus"

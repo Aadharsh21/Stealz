@@ -74,7 +74,7 @@ export function SearchBox({
 
   const large = size === 'lg';
   const showList = open && options.length > 0;
-  const heading = value.trim() ? null : recent.length ? 'Recent and popular' : `Popular in ${country === 'US' ? 'the US' : country === 'AE' ? 'the UAE' : 'India'}`;
+  const heading = value.trim() ? null : recent.length ? 'Recent and popular' : `Popular in ${country === 'US' ? 'the US' : country === 'GB' ? 'the UK' : country === 'AE' ? 'the UAE' : 'India'}`;
 
   return (
     <form

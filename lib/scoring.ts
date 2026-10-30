@@ -16,7 +16,7 @@ export function effectiveDays(o: Offer): number {
 /** Total with a cautious allowance when the store didn't list shipping. */
 export function effectiveTotal(o: Offer): number {
   if (o.totalIsComplete) return o.total;
-  const allowance = o.currency === 'INR' ? 79 : o.currency === 'AED' ? 15 : 6;
+  const allowance = o.currency === 'INR' ? 79 : o.currency === 'AED' ? 15 : o.currency === 'GBP' ? 5 : 6;
   return o.total + allowance;
 }
 

@@ -192,9 +192,9 @@ export function parseShippingText(text: string, ctx: ParseContext): ShippingInfo
   const t = text.replace(/ /g, ' ');
   const lower = t.toLowerCase();
 
-  // "Free delivery on $75+", "Free shipping on orders over $50", "Free delivery above ₹499"
+  // "Free delivery on $75+", "Free shipping on orders over $50", "Free delivery above ₹499", "Free delivery over £50"
   const threshold = lower.match(
-    /free[^.]*?(?:deliver|ship)[^.]*?(?:\borders?\s+(?:of\s+|over\s+|above\s+)?|\b(?:over|above)\s+|\bon\s+(?=[$₹]|aed|rs\b|rs\.|inr))(?:us\$|[$₹]|aed\s?|rs\.?\s?|inr\s?)?\s*(\d[\d,]*(?:\.\d+)?)/,
+    /free[^.]*?(?:deliver|ship)[^.]*?(?:\borders?\s+(?:of\s+|over\s+|above\s+)?|\b(?:over|above)\s+|\bon\s+(?=[$₹£]|aed|rs\b|rs\.|inr|gbp))(?:us\$|[$₹£]|aed\s?|rs\.?\s?|inr\s?|gbp\s?)?\s*(\d[\d,]*(?:\.\d+)?)/,
   );
   if (threshold) {
     const thr = parseMoney(threshold[1]);

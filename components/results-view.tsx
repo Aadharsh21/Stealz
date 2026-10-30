@@ -24,6 +24,7 @@ type State =
 
 function taxPhrase(data: SearchResponse): string {
   const loc = data.location;
+  if (loc.country === 'GB') return 'Totals include delivery fees and VAT';
   if (loc.country === 'AE') return 'Totals include delivery fees and 5% VAT';
   if (loc.country === 'IN') return 'Totals include delivery charges and GST';
   if (!loc.regionCode) return 'Totals include shipping but not sales tax. Set your ZIP code to add it';

@@ -11,8 +11,21 @@ export interface CountryConfig {
   hl: string;
   googleDomain: string;
   defaultTimeZone: string;
-  /** Postal code input, or null when the country doesn't use one (UAE). */
-  postal: { label: string; placeholder: string; pattern: RegExp; length: number } | null;
+  /**
+   * Postal code input, or null when the country doesn't use one (UAE). `pattern` is tested
+   * against the code with spaces removed and letters uppercased.
+   */
+  postal: {
+    label: string;
+    /** How the code is named mid-sentence ("We couldn't find that postcode"). */
+    noun: string;
+    placeholder: string;
+    pattern: RegExp;
+    /** Longest input, including the space in UK postcodes. */
+    length: number;
+    numeric: boolean;
+    invalid: string;
+  } | null;
   /** Whether prices shown to shoppers already include sales tax / VAT / GST. */
   taxIncluded: boolean;
   taxName: string;
@@ -31,9 +44,30 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     hl: 'en',
     googleDomain: 'google.com',
     defaultTimeZone: 'America/New_York',
-    postal: { label: 'ZIP code', placeholder: 'e.g. 85281', pattern: /^\d{5}$/, length: 5 },
+    postal: {
+      label: 'ZIP code', noun: 'ZIP code', placeholder: 'e.g. 85281', pattern: /^\d{5}$/, length: 5,
+      numeric: true, invalid: 'Enter a 5-digit ZIP code.',
+    },
     taxIncluded: false,
     taxName: 'sales tax',
+    weekend: [0, 6],
+  },
+  GB: {
+    code: 'GB',
+    name: 'United Kingdom',
+    short: 'UK',
+    currency: 'GBP',
+    locale: 'en-GB',
+    gl: 'uk',
+    hl: 'en',
+    googleDomain: 'google.co.uk',
+    defaultTimeZone: 'Europe/London',
+    postal: {
+      label: 'Postcode', noun: 'postcode', placeholder: 'e.g. SW1A 1AA', pattern: /^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/,
+      length: 8, numeric: false, invalid: 'Enter a full UK postcode, like SW1A 1AA.',
+    },
+    taxIncluded: true,
+    taxName: 'VAT',
     weekend: [0, 6],
   },
   AE: {
@@ -61,18 +95,41 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
     hl: 'en',
     googleDomain: 'google.co.in',
     defaultTimeZone: 'Asia/Kolkata',
-    postal: { label: 'PIN code', placeholder: 'e.g. 560001', pattern: /^\d{6}$/, length: 6 },
+    postal: {
+      label: 'PIN code', noun: 'PIN code', placeholder: 'e.g. 560001', pattern: /^\d{6}$/, length: 6,
+      numeric: true, invalid: 'Enter a 6-digit PIN code.',
+    },
     taxIncluded: true,
     taxName: 'GST',
     weekend: [0],
   },
 };
 
-export const COUNTRY_CODES: CountryCode[] = ['US', 'AE', 'IN'];
+export const COUNTRY_CODES: CountryCode[] = ['US', 'GB', 'AE', 'IN'];
 
 export function isCountryCode(value: unknown): value is CountryCode {
-  return value === 'US' || value === 'AE' || value === 'IN';
+  return typeof value === 'string' && (COUNTRY_CODES as string[]).includes(value);
 }
+
+/** Postal code as typed by a person, made comparable: no spaces, capital letters. */
+export function compactPostal(value: string): string {
+  return value.replace(/\s+/g, '').toUpperCase();
+}
+
+/** Postal code as people write it. UK postcodes get their space back ("SW1A 1AA"). */
+export function formatPostal(country: CountryCode, postal: string): string {
+  if (country !== 'GB') return postal;
+  const p = compactPostal(postal);
+  return p.length > 3 ? `${p.slice(0, -3)} ${p.slice(-3)}` : p;
+}
+
+/** The four nations of the UK by their ISO 3166-2 code. */
+export const UK_NATIONS: Record<string, string> = {
+  ENG: 'England',
+  SCT: 'Scotland',
+  WLS: 'Wales',
+  NIR: 'Northern Ireland',
+};
 
 export const US_STATES: Record<string, string> = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado',
@@ -142,15 +199,20 @@ export const INDIA_STATES: Record<string, string> = {
 export function regionName(country: CountryCode, code?: string): string | undefined {
   if (!code) return undefined;
   const c = code.toUpperCase().replace(/^[A-Z]{2}-/, '');
-  if (country === 'US') return US_STATES[c];
-  if (country === 'AE') return UAE_EMIRATES[c];
-  return INDIA_STATES[c];
+  return regionTable(country)[c];
+}
+
+function regionTable(country: CountryCode): Record<string, string> {
+  if (country === 'US') return US_STATES;
+  if (country === 'GB') return UK_NATIONS;
+  if (country === 'AE') return UAE_EMIRATES;
+  return INDIA_STATES;
 }
 
 /** Reverse lookup: "Arizona" -> "AZ". */
 export function regionCodeFromName(country: CountryCode, name?: string): string | undefined {
   if (!name) return undefined;
-  const table = country === 'US' ? US_STATES : country === 'AE' ? UAE_EMIRATES : INDIA_STATES;
+  const table = regionTable(country);
   const wanted = name.trim().toLowerCase();
   for (const [code, value] of Object.entries(table)) {
     if (value.toLowerCase() === wanted) return code;
@@ -173,6 +235,7 @@ export function timeZoneFor(country: CountryCode, regionCode?: string, browserTz
   if (isValidTimeZone(browserTz)) {
     // Only trust the browser zone if it is plausible for the chosen country.
     if (country === 'US' && (browserTz.startsWith('America/') || browserTz.startsWith('Pacific/Honolulu'))) return browserTz;
+    if (country === 'GB' && browserTz === 'Europe/London') return browserTz;
     if (country === 'AE' && browserTz === 'Asia/Dubai') return browserTz;
     if (country === 'IN' && (browserTz === 'Asia/Kolkata' || browserTz === 'Asia/Calcutta')) return 'Asia/Kolkata';
   }

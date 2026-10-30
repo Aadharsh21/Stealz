@@ -1,15 +1,15 @@
 # Stealz
 
-Find the real steal. Stealz compares new bags, shoes, clothing and accessories across stores in the US, UAE and India. For each store it shows what you'd actually pay (price + shipping + tax for your location) and when the item would arrive.
+Find the real steal. Stealz compares new bags, shoes, clothing and accessories across stores in the US, UK, UAE and India. For each store it shows what you'd actually pay (price + shipping + tax for your location) and when the item would arrive.
 
 Built with Next.js (App Router), React and Tailwind CSS, deployed on Vercel.
 
 ## Features
 
 - Search any item and compare stores side by side
-- Totals for your location: US sales tax by ZIP code (with clothing exemptions), UAE VAT and India GST already included
-- Delivery dates worked out for your ZIP, PIN code or emirate
-- Location detected automatically, with manual ZIP/PIN entry
+- Totals for your location: US sales tax by ZIP code (with clothing exemptions); UK VAT, UAE VAT and India GST already included
+- Delivery dates worked out for your ZIP code, postcode, PIN code or emirate
+- Location detected automatically, with manual ZIP code, postcode or PIN entry
 - Deal score (buy now or wait), inflated "was" price warnings, seller trust signals, coupons
 - Price history and price-drop email alerts (no account needed)
 - Watchlist saved in the browser, shareable comparison links

@@ -1,5 +1,5 @@
 // Sales tax estimates. US prices online are shown before tax, so we estimate it from the
-// shopper's state. UAE (5% VAT) and India (GST) prices already include tax.
+// shopper's state. UK (VAT), UAE (5% VAT) and India (GST) prices already include tax.
 //
 // Rates: Tax Foundation, "State and Local Sales Tax Rates, Midyear 2026" (combined state rate
 // plus population-weighted average local rate, as of July 1, 2026). Local rates vary by city,
@@ -90,6 +90,8 @@ export function estimateUsTax(price: number, title: string, regionCode?: string,
 
 /** Tax for any supported country. */
 export function taxFor(country: CountryCode, price: number, title: string, regionCode?: string, postalCode?: string): TaxInfo {
+  // UK VAT is 20%, but children's clothes and shoes are zero-rated, so no rate is claimed.
+  if (country === 'GB') return { amount: 0, mode: 'included', note: 'Incl. VAT' };
   if (country === 'AE') return { amount: 0, mode: 'included', rate: 5, note: 'Incl. 5% VAT' };
   if (country === 'IN') return { amount: 0, mode: 'included', note: 'Incl. GST' };
   return estimateUsTax(price, title, regionCode, postalCode);
