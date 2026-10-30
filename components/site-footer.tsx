@@ -20,6 +20,12 @@ export function SiteFooter() {
           <Link href="/how-it-works" className="font-medium text-ink-soft hover:text-ink">
             How it works
           </Link>
+          <Link href="/sale" className="font-medium text-ink-soft hover:text-ink">
+            On sale
+          </Link>
+          <Link href="/coupons" className="font-medium text-ink-soft hover:text-ink">
+            Coupons
+          </Link>
           <Link href="/watchlist" className="font-medium text-ink-soft hover:text-ink">
             Your watchlist
           </Link>

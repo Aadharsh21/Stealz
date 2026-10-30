@@ -16,6 +16,8 @@ export interface ProviderItem {
   image?: string;
   price: number;
   originalPrice?: number;
+  /** Percent off as the listing states it ("51% OFF"), when there's no "was" price. */
+  discountPct?: number;
   rating?: number;
   reviews?: number;
   /** Free-text notes from the listing: "Free delivery by Mon", "Free 30-day returns", ... */

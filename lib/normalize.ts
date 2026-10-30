@@ -50,6 +50,7 @@ export function itemToOffer(item: ProviderItem, base: OfferContext, timeZone: st
       image: item.image,
       price: item.price,
       originalPrice: item.originalPrice,
+      discountPct: item.discountPct,
       shipping,
       tax: item.taxAmount != null ? exactTax(item.taxAmount) : null,
       providerTotal: item.providerTotal,
@@ -172,7 +173,7 @@ export function groupListings(listings: Listing[]): ProductGroup[] {
       match: lead.match,
       ref: withToken.ref,
       multipleSources: d.items.some((l) => l.multipleSources),
-      onSale: d.items.some((l) => l.originalPrice != null && !l.discountNote),
+      onSale: d.items.some((l) => (l.originalPrice != null || l.discountPct != null) && !l.discountNote),
     };
   });
   const order = new Map(drafts.map((d) => [d.key, d.order]));

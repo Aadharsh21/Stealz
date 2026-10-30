@@ -68,10 +68,27 @@ const SCHEMA = [
     count integer not null,
     reset_at timestamptz not null
   )`,
+  `create table if not exists coupons (
+    country text not null,
+    store text not null,
+    code text not null,
+    detail text,
+    link text,
+    product_title text,
+    product_ref text,
+    seen_count integer not null default 1,
+    first_seen timestamptz not null default now(),
+    last_seen timestamptz not null default now(),
+    primary key (country, store, code)
+  )`,
+  `create index if not exists coupons_recent on coupons (country, last_seen desc)`,
 ];
 
+/** The newest table. When it exists, the whole schema does; when not, every statement runs (all are idempotent). */
+const NEWEST_TABLE = 'public.coupons';
+
 async function ensureSchema(sql: SqlClient): Promise<void> {
-  const probe = (await sql.query(`select to_regclass('public.counters') as t`)) as unknown as { t: string | null }[];
+  const probe = (await sql.query(`select to_regclass('${NEWEST_TABLE}') as t`)) as unknown as { t: string | null }[];
   if (probe[0]?.t) return;
   for (const statement of SCHEMA) {
     await sql.query(statement);

@@ -83,6 +83,8 @@ export interface Offer {
   image?: string;
   price: number;
   originalPrice?: number;
+  /** Percent off the regular price: from the "was" price, or as the store states it. */
+  discountPct?: number;
   currency: CurrencyCode;
   shipping: ShippingInfo;
   tax: TaxInfo;

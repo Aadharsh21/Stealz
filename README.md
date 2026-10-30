@@ -11,6 +11,9 @@ Built with Next.js (App Router), React and Tailwind CSS, deployed on Vercel.
 - Delivery dates worked out for your ZIP code, postcode, PIN code or emirate
 - Location detected automatically, with manual ZIP code, postcode or PIN entry
 - Deal score (buy now or wait), inflated "was" price warnings, seller trust signals, coupons
+- **On sale** page: real markdowns per category from Google Shopping's on-sale filter (one search per category and country a week, only when someone opens it)
+- **Coupons and offers** page: promo codes stores publish in their Google Shopping listings (collected from searches people already run, no extra cost), stores with sales on, and more stores to check
+- One-tap links to search the same item on more stores in each country (Trendyol and Brands For Less in the UAE, Selfridges and ASOS in the UK, and more)
 - Price history and price-drop email alerts (no account needed)
 - Watchlist saved in the browser, shareable comparison links
 - Sample data mode, so the site works before any API key is added

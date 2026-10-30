@@ -49,3 +49,12 @@ export function formatMoney(amount: number, currency: CurrencyCode, opts: { comp
 export function currencySymbol(currency: CurrencyCode): string {
   return currency === 'USD' ? '$' : currency === 'GBP' ? '£' : currency === 'INR' ? '₹' : 'AED';
 }
+
+/** "51% OFF" or "20% off" in a tag or note, as a number. */
+export function statedPercent(texts: (string | undefined)[]): number | undefined {
+  for (const t of texts) {
+    const match = t?.match(/\b(\d{1,2})\s?%\s*off\b/i);
+    if (match) return Number(match[1]);
+  }
+  return undefined;
+}

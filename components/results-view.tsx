@@ -10,8 +10,9 @@ import type { ResultFilters, SortKey } from '@/lib/filters';
 import { DEFAULT_FILTERS, SORT_LABELS, activeFilterCount, cheapestListing, filterGroups, filterListings } from '@/lib/filters';
 import { addRecentSearch } from '@/lib/storage';
 import { popularSearches } from '@/lib/suggestions';
-import { AlertIcon, GridIcon, InfoIcon, ListIcon, SlidersIcon, XIcon } from './icons';
+import { AlertIcon, GridIcon, InfoIcon, ListIcon, SlidersIcon, TagIcon, XIcon } from './icons';
 import { useLocation } from './location-provider';
+import { MoreStores } from './more-stores';
 import { ListingRow, ProductCard } from './product-card';
 import { ResultsFilters } from './results-filters';
 import { Notice, Skeleton, buttonClass } from './ui';
@@ -98,6 +99,7 @@ export function ResultsView() {
   const listings = useMemo(() => (data ? filterListings(data.listings, filters, sort) : []), [data, filters, sort]);
   const cheapest = useMemo(() => cheapestListing(groups, data?.summary.scope), [groups, data?.summary.scope]);
   const filterCount = activeFilterCount(filters);
+  const saleCount = useMemo(() => (data ? data.groups.filter((g) => g.onSale).length : 0), [data]);
 
   if (!query) {
     return (
@@ -184,6 +186,9 @@ export function ResultsView() {
                   </Link>
                 ))}
               </div>
+              <div className="mt-10">
+                <MoreStores country={data.location.country} query={data.query} />
+              </div>
             </div>
           ) : (
             <>
@@ -224,6 +229,18 @@ export function ResultsView() {
                         ))}
                       </select>
                     </label>
+                    {saleCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setFilters((f) => ({ ...f, onSale: !f.onSale }))}
+                        aria-pressed={filters.onSale}
+                        className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ring-1 transition-colors ${
+                          filters.onSale ? 'bg-markdown/15 text-markdown ring-markdown/50' : 'text-ink-soft ring-line-strong hover:bg-canvas'
+                        }`}
+                      >
+                        <TagIcon size={14} /> On sale ({saleCount})
+                      </button>
+                    )}
                     <div className="ml-auto inline-flex rounded-full p-0.5 ring-1 ring-line-strong" role="group" aria-label="View">
                       <button
                         type="button"
@@ -264,6 +281,9 @@ export function ResultsView() {
                       ))}
                     </ul>
                   )}
+                  <div className="mt-14 border-t border-line pt-8">
+                    <MoreStores country={data.location.country} query={data.query} />
+                  </div>
                 </section>
               </div>
 

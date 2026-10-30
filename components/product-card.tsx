@@ -28,8 +28,13 @@ export function ProductImage({ src, alt, className = '' }: { src?: string; alt: 
   );
 }
 
-function sellerBadges(l: Listing) {
-  const pct = l.discountNote ? null : discountPercent(l.price, l.originalPrice);
+/** Percent off for a listing, unless the discount looks inflated. */
+export function salePercent(l: Listing): number | null {
+  return l.discountNote ? null : (discountPercent(l.price, l.originalPrice) ?? l.discountPct ?? null);
+}
+
+function sellerBadges(l: Listing, hideSale = false) {
+  const pct = hideSale ? null : salePercent(l);
   return (
     <>
       {l.colorNote && <Badge tone="warn">{l.colorNote}</Badge>}
@@ -48,6 +53,8 @@ function sellerBadges(l: Listing) {
 export function ProductCard({ group, isCheapest }: { group: ProductGroup; isCheapest: boolean }) {
   const best = group.listings[0];
   const more = group.storeCount - 1;
+  // On-sale items get a tag on the photo, from whichever store has the markdown.
+  const salePct = group.listings.map(salePercent).find((p): p is number => p != null) ?? null;
   return (
     <Link href={productHref(group.ref)} className="group block rounded-2xl p-2 -m-2 hover:bg-canvas/60">
       <div className="relative">
@@ -56,6 +63,11 @@ export function ProductCard({ group, isCheapest }: { group: ProductGroup; isChea
           <Sticker animate className="absolute left-3 top-3">
             Lowest total
           </Sticker>
+        )}
+        {salePct != null && (
+          <span className="absolute right-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[12.5px] font-bold text-markdown ring-1 ring-markdown/50 backdrop-blur">
+            {salePct}% off
+          </span>
         )}
       </div>
       <div className="mt-3 px-1">
@@ -77,7 +89,7 @@ export function ProductCard({ group, isCheapest }: { group: ProductGroup; isChea
         </p>
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           {more > 0 && <Badge>{`${group.storeCount} stores`}</Badge>}
-          {sellerBadges(best)}
+          {sellerBadges(best, salePct != null)}
         </div>
       </div>
     </Link>

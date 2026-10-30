@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { loadWatchlist } from '@/lib/storage';
 import { Flag } from './flags';
-import { BookmarkIcon, ChevronDownIcon, PinIcon } from './icons';
+import { BookmarkIcon, ChevronDownIcon, PinIcon, TagIcon } from './icons';
 import { useLocation } from './location-provider';
 import { Logo } from './logo';
 import { SearchBox } from './search-box';
@@ -54,6 +54,34 @@ function WatchlistLink() {
   );
 }
 
+function DealsNav() {
+  const pathname = usePathname();
+  const link = (href: string, label: string) => (
+    <Link
+      href={href}
+      aria-current={pathname === href ? 'page' : undefined}
+      className={`whitespace-nowrap text-[14px] font-semibold transition-colors hover:text-ink ${pathname === href ? 'text-ink' : 'text-ink-soft'}`}
+    >
+      {label}
+    </Link>
+  );
+  return (
+    <>
+      <nav aria-label="Deals" className="hidden items-center gap-5 lg:flex">
+        {link('/sale', 'On sale')}
+        {link('/coupons', 'Coupons')}
+      </nav>
+      <Link
+        href="/sale"
+        aria-label="On sale"
+        className="inline-grid h-10 w-10 shrink-0 place-items-center rounded-full text-markdown ring-1 ring-line-strong hover:bg-canvas lg:hidden"
+      >
+        <TagIcon size={18} />
+      </Link>
+    </>
+  );
+}
+
 function HeaderSearch() {
   const params = useSearchParams();
   return <SearchBox initialQuery={params.get('q') ?? ''} />;
@@ -89,7 +117,8 @@ export function SiteHeader() {
             </Suspense>
           )}
         </div>
-        <div className="ml-auto flex min-w-0 items-center gap-2 md:ml-0">
+        <div className="ml-auto flex min-w-0 items-center gap-2 md:ml-0 lg:gap-3">
+          <DealsNav />
           <LocationButton />
           <WatchlistLink />
         </div>

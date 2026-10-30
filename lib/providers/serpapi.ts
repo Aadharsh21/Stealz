@@ -7,7 +7,7 @@
 import { COUNTRIES } from '../countries';
 import { config } from '../config';
 import { cacheGet, cacheSet } from '../cache';
-import { parseMoney } from '../money';
+import { parseMoney, statedPercent } from '../money';
 import type { ResolvedLocation } from '../types';
 import { ProviderError } from './types';
 import type { ProviderItem, ProviderProductResult, ProviderSearchResult } from './types';
@@ -139,6 +139,7 @@ export function parseShoppingResults(data: Json): ProviderItem[] {
 
     const extensions = asArray(r.extensions).filter(isString) as unknown as string[];
     const nearby = extensions.find((e) => /(in store|nearby|pick ?up|\d\s?(mi|km)\b)/i.test(e));
+    const oldPrice = num(r.extracted_old_price) ?? parseMoney(r.old_price) ?? undefined;
     const notes = [str(r.delivery), ...extensions.filter((e) => e !== nearby)].filter(isString) as string[];
     items.push({
       source: 'google',
@@ -149,7 +150,8 @@ export function parseShoppingResults(data: Json): ProviderItem[] {
       googleLink: str(r.product_link),
       image: firstImage(r),
       price,
-      originalPrice: num(r.extracted_old_price) ?? parseMoney(r.old_price) ?? undefined,
+      originalPrice: oldPrice,
+      discountPct: oldPrice == null ? statedPercent([str(r.tag), ...extensions]) : undefined,
       rating: num(r.rating),
       reviews: num(r.reviews),
       notes,
@@ -205,6 +207,7 @@ export function parseImmersiveProduct(pr: Json): ProviderProductResult {
       image: images[0],
       price,
       originalPrice: installment ? undefined : num(s.extracted_original_price),
+      discountPct: installment || num(s.extracted_original_price) != null ? undefined : statedPercent([str(s.discount), str(s.tag)]),
       rating: num(s.rating),
       reviews: num(s.reviews),
       notes: asArray(s.details_and_offers).filter(isString) as unknown as string[],
@@ -220,9 +223,15 @@ export function parseImmersiveProduct(pr: Json): ProviderProductResult {
   return { details, items, notices: [] };
 }
 
-export async function searchGoogleShopping(query: string, loc: ResolvedLocation): Promise<ProviderSearchResult> {
+export async function searchGoogleShopping(
+  query: string,
+  loc: ResolvedLocation,
+  opts: { onSale?: boolean } = {},
+): Promise<ProviderSearchResult> {
   const cfg = COUNTRIES[loc.country];
-  const base = { engine: 'google_shopping', q: query, gl: cfg.gl, hl: cfg.hl, google_domain: cfg.googleDomain };
+  const base: Record<string, string> = { engine: 'google_shopping', q: query, gl: cfg.gl, hl: cfg.hl, google_domain: cfg.googleDomain };
+  // Google's own "On sale" filter: only products the store marks as reduced.
+  if (opts.onSale) base.on_sale = 'true';
   const notices: string[] = [];
   const googleLocation = await googleLocationFor(loc);
   let data: Json;

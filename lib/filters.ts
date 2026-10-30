@@ -52,7 +52,7 @@ export function activeFilterCount(f: ResultFilters): number {
 export function listingPasses(l: Listing, f: ResultFilters): boolean {
   if (f.freeShipping && !l.shipping.free) return false;
   if (f.maxDays != null && (l.delivery.maxDays == null || l.delivery.maxDays > f.maxDays)) return false;
-  if (f.onSale && (l.originalPrice == null || l.discountNote)) return false;
+  if (f.onSale && ((l.originalPrice == null && l.discountPct == null) || l.discountNote)) return false;
   if (f.hideMarketplaces && (l.isMarketplace || isFlagged(l))) return false;
   if (f.exactOnly && l.match < 0.99) return false;
   if (f.stores.length > 0 && !f.stores.includes(l.store)) return false;

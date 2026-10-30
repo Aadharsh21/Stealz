@@ -3,7 +3,7 @@ import { HomeLocationLine, HomePopular } from '@/components/home-popular';
 import { HomePicks } from '@/components/home-picks';
 import { SearchBox } from '@/components/search-box';
 import { Flag } from '@/components/flags';
-import { BellIcon, ReturnIcon, ShieldIcon, TagIcon, TruckIcon } from '@/components/icons';
+import { BellIcon, ReturnIcon, ShieldIcon, TagIcon, TicketIcon, TruckIcon } from '@/components/icons';
 import { CATEGORIES } from '@/lib/suggestions';
 
 const STEPS = [
@@ -65,6 +65,25 @@ export default function HomePage() {
       </section>
 
       <HomePicks />
+
+      <section aria-label="Deals" className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Link href="/sale" className="group rounded-2xl p-6 ring-1 ring-line transition-colors hover:bg-canvas sm:p-8">
+            <TagIcon size={22} className="text-markdown" />
+            <h2 className="type-wide mt-5 text-[30px] leading-tight group-hover:underline group-hover:underline-offset-4">On sale this week</h2>
+            <p className="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-soft">
+              Real markdowns on designer clothes, bags and sneakers. Fake shops and inflated &ldquo;was&rdquo; prices are left out.
+            </p>
+          </Link>
+          <Link href="/coupons" className="group rounded-2xl p-6 ring-1 ring-line transition-colors hover:bg-canvas sm:p-8">
+            <TicketIcon size={22} className="text-sticker" />
+            <h2 className="type-wide mt-5 text-[30px] leading-tight group-hover:underline group-hover:underline-offset-4">Coupons and offers</h2>
+            <p className="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-soft">
+              Promo codes stores publish, which stores have sales on, and more stores to check where you live.
+            </p>
+          </Link>
+        </div>
+      </section>
 
       <section className="border-y border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">

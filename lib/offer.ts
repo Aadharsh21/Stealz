@@ -21,6 +21,8 @@ export interface RawOffer {
   image?: string;
   price: number;
   originalPrice?: number;
+  /** Percent off as the store states it, used when there's no "was" price. */
+  discountPct?: number;
   shipping?: ShippingInfo | null;
   /** Exact tax from the provider, when it has one. */
   tax?: TaxInfo | null;
@@ -79,7 +81,9 @@ export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
 
   const tags = new Set(raw.tags ?? []);
   const pct = discountPercent(raw.price, raw.originalPrice);
+  const stated = pct == null && raw.discountPct != null && raw.discountPct >= 3 && raw.discountPct <= 95 ? Math.round(raw.discountPct) : null;
   if (pct != null) tags.add(`${pct}% off`);
+  else if (stated != null) tags.add(`${stated}% off`);
   if (raw.coupon) tags.add('Coupon');
   const marketplace = raw.source === 'ebay' || isMarketplace(raw.store, domain);
   if (isLowTrustStore(raw.store, domain) || isSuspiciousStore(raw.store, domain, ctx.country)) tags.add('Unverified seller');
@@ -96,6 +100,7 @@ export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
     image: raw.image,
     price: round2(raw.price),
     originalPrice: pct != null ? round2(raw.originalPrice as number) : undefined,
+    discountPct: pct ?? stated ?? undefined,
     currency: ctx.currency ?? COUNTRIES[ctx.country].currency,
     shipping,
     tax,

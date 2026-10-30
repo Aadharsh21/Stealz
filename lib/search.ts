@@ -18,6 +18,9 @@ import { wantedColorText } from './colors';
 import { markColorMismatches } from './deal';
 import { isFlagged } from './scoring';
 import { normalize } from './text';
+import { couponsFromItems } from './coupon-codes';
+import { recordCoupons } from './coupons';
+import { cleanStoreName } from './stores';
 
 export interface RawSearch {
   items: ProviderItem[];
@@ -32,8 +35,8 @@ export function cleanQuery(input: string): string {
   return input.replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
 }
 
-export function searchCacheKey(query: string, loc: UserLocation): string {
-  return `search:v2:${loc.country}:${locationKey(loc)}:${normalize(query)}`;
+export function searchCacheKey(query: string, loc: UserLocation, onSale = false): string {
+  return `search:v2:${loc.country}:${locationKey(loc)}:${normalize(query)}${onSale ? ':sale' : ''}`;
 }
 
 /** Per-visitor rate limit for anything that costs a live API call. */
@@ -51,30 +54,31 @@ export async function getSearchItems(
   query: string,
   loc: ResolvedLocation,
   ip: string,
-  opts: { cachedOnly?: boolean; now?: Date } = {},
+  opts: { cachedOnly?: boolean; now?: Date; onSale?: boolean } = {},
 ): Promise<RawSearch | null> {
   const mode = dataMode();
   if (mode === 'none') throw new AppError('No shopping data source is configured yet.', 500, 'server');
   if (mode === 'demo') {
     const r = demoSearch(query, loc, opts.now);
-    return { items: r.items, sources: r.sources, notices: r.notices, demo: true, fetchedAt: new Date().toISOString(), cached: false };
+    const items = opts.onSale ? r.items.filter((i) => i.originalPrice != null) : r.items;
+    return { items, sources: r.sources, notices: r.notices, demo: true, fetchedAt: new Date().toISOString(), cached: false };
   }
 
-  const key = searchCacheKey(query, loc);
+  const key = searchCacheKey(query, loc, opts.onSale);
   const cached = await cacheGet<RawSearch>(key);
   if (cached) return { ...cached, cached: true };
   if (opts.cachedOnly) return null;
 
   await checkVisitorLimit(ip, 'search');
   const useGoogle = googleEnabled();
-  const useEbay = ebayEnabled() && loc.country === 'US';
+  const useEbay = ebayEnabled() && loc.country === 'US' && !opts.onSale;
   if (!useGoogle && !useEbay) {
     return { items: [], sources: [], notices: [`Live results for ${COUNTRIES[loc.country].name} aren't set up yet.`], demo: false, fetchedAt: new Date().toISOString(), cached: false };
   }
   if (useGoogle) await takeLiveCredit();
 
   const [google, ebay] = await Promise.allSettled([
-    useGoogle ? searchGoogleShopping(query, loc) : Promise.resolve(null),
+    useGoogle ? searchGoogleShopping(query, loc, { onSale: opts.onSale }) : Promise.resolve(null),
     useEbay ? searchEbay(query, loc) : Promise.resolve([] as ProviderItem[]),
   ]);
 
@@ -109,6 +113,8 @@ export interface SearchInput {
   tz?: string;
   ip: string;
   now?: Date;
+  /** Only items stores have marked down (Google's "On sale" filter). */
+  onSale?: boolean;
 }
 
 export interface SearchOutcome {
@@ -122,7 +128,7 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
   if (query.length < 2) throw new AppError('Type at least 2 characters to search.', 400, 'bad_request');
   const now = input.now ?? new Date();
   const loc = await resolveLocation(input.location, input.tz);
-  const raw = (await getSearchItems(query, loc, input.ip, { now })) as RawSearch;
+  const raw = (await getSearchItems(query, loc, input.ip, { now, onSale: input.onSale })) as RawSearch;
   const built = buildListings(raw.items, query, loc, now);
   // Originals only: listings that look fake (copy shops, fake-shop domains, prices no genuine
   // item sells for) are left out entirely, not just labelled.
@@ -153,6 +159,9 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
       : async () => {
           const rows = groups.flatMap((g) => snapshotRows(g.key, g.listings, 'search'));
           await recordSnapshots(rows);
+          const shown = new Set(listings.map((l) => normalize(l.store)));
+          const codes = couponsFromItems(raw.items).filter((c) => shown.has(normalize(cleanStoreName(c.store))));
+          await recordCoupons(loc.country, codes);
         };
   return { response, background };
 }

@@ -15,6 +15,8 @@ import { DealScoreCard } from './deal-score';
 import { DeliveryTimeline } from './delivery-timeline';
 import { AlertIcon, BookmarkIcon, CheckIcon, ChevronLeftIcon, InfoIcon, ShareIcon, TruckIcon } from './icons';
 import { useLocation } from './location-provider';
+import { MoreStores } from './more-stores';
+import { storeQuery } from '@/lib/store-links';
 import { OfferTable } from './offer-table';
 import { PriceHistory } from './price-history';
 import { ProductImage } from './product-card';
@@ -248,6 +250,9 @@ export function ProductView() {
             </p>
             <div className="mt-5">
               <OfferTable offers={data.offers} />
+            </div>
+            <div className="mt-8">
+              <MoreStores country={data.location.country} query={storeQuery(data.product.title)} />
             </div>
           </section>
 

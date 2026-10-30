@@ -21,7 +21,7 @@ const RESALE_STORES = [
 const MARKETPLACE_PATTERNS = [
   /\bebay\b/, /\s-\s?seller\b/, /\bmarketplace\b/, /\betsy\b/, /\bmeesho\b/, /\bsnapdeal\b/,
   /\baliexpress\b/, /\bdhgate\b/, /\btemu\b/, /\bwish\b/, /\bshein marketplace\b/, /\bwalmart seller\b/,
-  /\bamazon\b.*\bseller\b/, /\bnoon\b.*\bseller\b/, /\bshop app\b/,
+  /\bamazon\b.*\bseller\b/, /\bnoon\b.*\bseller\b/, /\bshop app\b/, /\btrendyol\b/,
 ];
 
 /** Sellers known for very cheap unbranded copies; listed so shoppers see a warning. */
@@ -59,7 +59,8 @@ const KNOWN_RETAILERS = [
   'mainlinemenswear', 'oipolloi', 'hipstore', 'radley', 'aspinal', 'paulsmith',
   // UAE
   'namshi', 'noon', 'ounass', '6thstreet', 'levelshoes', 'harveynichols', 'centrepoint', 'maxfashion', 'splash',
-  'brandsforless', 'tryano', 'thatconceptstore', 'sharafdg', 'carrefour', 'luluhypermarket',
+  'brandsforless', 'tryano', 'thatconceptstore', 'sharafdg', 'carrefour', 'luluhypermarket', 'trendyol', 'aivi',
+  'sivvi', 'nisnass', 'styli', 'mumzworld', 'boutique1', 'galerieslafayette', 'rivafashion',
   // India
   'myntra', 'ajio', 'tatacliq', 'nykaa', 'flipkart', 'shoppersstop', 'lifestylestores', 'westside', 'pantaloons',
   'reliancetrends', 'bewakoof', 'thesouledstore', 'souledstore', 'fabindia', 'libas', 'biba', 'bata', 'metroshoes',

@@ -16,7 +16,10 @@ import { demoHistory, demoProduct } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { googleProduct } from './providers/serpapi';
 import { ProviderError } from './providers/types';
-import { domainOf, isNotAnItem, looksCounterfeit } from './stores';
+import { cleanStoreName, domainOf, isNotAnItem, looksCounterfeit } from './stores';
+import { couponsFromItems } from './coupon-codes';
+import { recordCoupons } from './coupons';
+import { encodeRef } from './ref';
 import type { ProviderItem, ProviderProductResult } from './providers/types';
 import { cheapestOf, effectiveTotal, isFlagged } from './scoring';
 import { checkVisitorLimit, getSearchItems } from './search';
@@ -220,6 +223,10 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
     ? undefined
     : async () => {
         await recordSnapshots(snapshotRows(ref.k, offers, input.fresh ? 'cron' : 'product'));
+        // Promo codes the stores list for this product (only stores we show, never fake shops).
+        const shown = new Set(offers.map((o) => normalize(o.store)));
+        const codes = couponsFromItems(raw.items).filter((c) => shown.has(normalize(cleanStoreName(c.store))));
+        await recordCoupons(loc.country, codes, encodeRef(ref));
         const { checkAlertsForProduct } = await import('./alerts');
         await checkAlertsForProduct(ref.k, offers, product, loc);
       };
