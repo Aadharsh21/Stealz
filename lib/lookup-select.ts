@@ -149,11 +149,16 @@ function toOffer(l: Listing, stem?: string): LookupOffer {
   };
 }
 
+/** One key per store, so "coach.com" and "COACH" (or "Amazon.co.uk" and "Amazon") count once. */
+export function storeKey(store: string): string {
+  return normalize(store).replace(/\s+(?:com|co|uk|net|org|ae|in|us)\b/g, '').replace(/\s+/g, '');
+}
+
 /** The cheapest listing per store, cheapest first. */
 function perStore(listings: Listing[]): Listing[] {
   const best = new Map<string, Listing>();
   for (const l of listings) {
-    const key = normalize(l.store);
+    const key = storeKey(l.store);
     const prev = best.get(key);
     if (!prev || effectiveTotal(l) < effectiveTotal(prev)) best.set(key, l);
   }

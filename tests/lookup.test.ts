@@ -59,6 +59,18 @@ test('same item vs other colors, cheapest, and savings against this store', () =
   assert.equal(pick.bestRef, "ref-Macy's");
 });
 
+test('one row per store, even when Google names it two ways', async () => {
+  const { storeKey } = await import('../lib/lookup-select');
+  assert.equal(storeKey('coach.com'), storeKey('COACH'));
+  assert.equal(storeKey('Amazon.co.uk'), storeKey('Amazon'));
+  assert.notEqual(storeKey('Nordstrom Rack'), storeKey('Nordstrom'));
+  const pick = pickOffers(
+    [listing('coach.com', 'Coach Tabby Shoulder Bag 26', 495), listing('COACH', 'Coach Tabby Shoulder Bag 26', 495), listing("Dillard's", 'Coach Tabby Shoulder Bag 26', 450)],
+    { host: 'www.coach.com', currency: 'USD' },
+  );
+  assert.deepEqual(pick.sameItem.map((o) => o.store), ["Dillard's", 'coach.com']);
+});
+
 test('without this store in the results, savings compare item prices; without a color, colors are listed', () => {
   const pick = pickOffers(
     [listing('Nordstrom', 'Coach Tabby Shoulder Bag 26 Black', 420), listing('Saks Fifth Avenue', 'Coach Tabby Shoulder Bag 26 Chalk', 380)],
