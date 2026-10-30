@@ -44,7 +44,7 @@ export function VerdictStrip({ summary }: { summary: SearchSummary }) {
   const cells = 1 + Number(Boolean(showFastest)) + Number(Boolean(showBest));
   const cols = cells === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : cells === 2 ? 'sm:grid-cols-2' : 'sm:max-w-md';
   return (
-    <section aria-label="Quick answers" className={`grid gap-3 ${cols}`}>
+    <section aria-label="Quick answers" className={`grid grid-cols-1 gap-3 ${cols}`}>
       <Cell
         listing={cheapest}
         highlight

@@ -35,7 +35,7 @@ function ResultsSkeleton() {
     <div aria-busy="true" aria-label="Loading prices">
       <Skeleton className="h-8 w-72" />
       <Skeleton className="mt-3 h-4 w-96 max-w-full" />
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-[170px] rounded-2xl" />
         ))}
@@ -188,7 +188,7 @@ export function ResultsView() {
                 )}
               </div>
 
-              <div className="mt-10 grid gap-8 lg:grid-cols-[232px_1fr]">
+              <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[232px_1fr]">
                 <aside className="hidden lg:block" aria-label="Filters">
                   <div className="sticky top-24">
                     <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} />

@@ -45,7 +45,7 @@ const COUNTRIES_COPY = [
 export default function HomePage() {
   return (
     <>
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.12fr_1fr] lg:gap-16">
+      <section className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.12fr_1fr] lg:gap-16">
         <div>
           <h1 className="type-wide text-[44px] font-extrabold leading-[0.98] tracking-[-0.04em] sm:text-[60px] lg:text-[66px]">
             Find the real steal.
@@ -66,7 +66,7 @@ export default function HomePage() {
       <section className="border-y border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <h2 className="type-wide text-[28px] font-extrabold tracking-[-0.03em]">How Stealz works</h2>
-          <ol className="mt-8 grid gap-8 md:grid-cols-3">
+          <ol className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
             {STEPS.map((step, i) => (
               <li key={step.title} className="relative">
                 <span
@@ -84,7 +84,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.3fr]">
           <div>
             <h2 className="type-wide text-[28px] font-extrabold tracking-[-0.03em]">Totals for where you live</h2>
             <p className="mt-3 max-w-[40ch] text-[16px] leading-relaxed text-ink-soft">

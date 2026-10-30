@@ -78,7 +78,7 @@ function ShareButton({ title }: { title: string }) {
 
 function ProductSkeleton() {
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]" aria-busy="true">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]" aria-busy="true">
       <Skeleton className="aspect-square rounded-xl" />
       <div>
         <Skeleton className="h-4 w-24" />
@@ -180,7 +180,7 @@ export function ProductView() {
 
       {data && best && (
         <>
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
             <Gallery images={data.product.images} title={data.product.title} />
             <div>
               {data.product.brand && <p className="text-[14px] font-semibold text-muted">{data.product.brand}</p>}
@@ -248,7 +248,7 @@ export function ProductView() {
             </div>
           </section>
 
-          <div className="mt-14 grid gap-10 lg:grid-cols-2">
+          <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2">
             <section aria-labelledby="deal-heading">
               <h2 id="deal-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
                 Buy now or wait?

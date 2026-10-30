@@ -90,7 +90,7 @@ export function TrackPrice({ data, encodedRef, onSaveToWatchlist, watched }: {
           </label>
         </div>
       </fieldset>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[10rem_1fr_auto]">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[10rem_1fr_auto]">
         {mode === 'target' && (
           <label className="flex h-11 items-center rounded-xl px-3 ring-1 ring-line-strong focus-within:ring-2 focus-within:ring-focus">
             <span className="text-muted">{currencySymbol(data.currency)}</span>

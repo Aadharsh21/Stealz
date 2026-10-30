@@ -5,7 +5,7 @@ import { TagMark } from './logo';
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-line">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr]">
+      <div className="mx-auto grid grid-cols-1 max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
             <TagMark size={22} />
