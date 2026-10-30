@@ -10,6 +10,7 @@ import {
 import { finalizeOffer } from './offer';
 import type { OfferContext } from './offer';
 import { encodeRef } from './ref';
+import { markPriceOutliers } from './deal';
 import { cheapestOf, explainPick, fastestOf, rankOffers } from './scoring';
 import { isResaleStore, looksUsed } from './stores';
 import { exactTax } from './tax';
@@ -168,6 +169,21 @@ export function groupListings(listings: Listing[]): ProductGroup[] {
   });
   const order = new Map(drafts.map((d) => [d.key, d.order]));
   return groups.sort((a, b) => tier(a.match) - tier(b.match) || (order.get(a.key) ?? 0) - (order.get(b.key) ?? 0));
+}
+
+/**
+ * Flags close matches priced far below the others. Skipped for broad searches (like "black
+ * tote") where close matches are many different products at very different prices.
+ */
+export function flagSuspiciousListings(listings: Listing[]): Listing[] {
+  const close = listings.filter((l) => l.match >= CLOSE_MATCH);
+  if (close.length < 5) return listings;
+  const prices = close.map((l) => l.price).sort((a, b) => a - b);
+  const q1 = prices[Math.floor(prices.length * 0.25)];
+  const q3 = prices[Math.floor(prices.length * 0.75)];
+  if (q1 <= 0 || q3 / q1 > 2.5) return listings;
+  const flagged = new Map(markPriceOutliers(close).filter((l) => l.priceWarning).map((l) => [l.id, l]));
+  return flagged.size ? listings.map((l) => flagged.get(l.id) ?? l) : listings;
 }
 
 /** Cheapest, fastest and best-value listing, preferring listings that closely match the search. */

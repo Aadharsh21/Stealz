@@ -28,6 +28,8 @@ function StoreBadges({ o }: { o: Offer }) {
   const pct = o.discountNote ? null : discountPercent(o.price, o.originalPrice);
   return (
     <div className="mt-1.5 flex flex-wrap gap-1.5">
+      {o.priceWarning && <Badge tone="warn">Check this price</Badge>}
+      {o.tags.includes('Unverified seller') && <Badge tone="warn">Unverified seller</Badge>}
       {o.isBrandStore && <Badge tone="info">Brand store</Badge>}
       {o.isMarketplace && <Badge tone="warn">Marketplace seller</Badge>}
       {pct != null && <Badge tone="sale">{pct}% off</Badge>}
@@ -37,7 +39,7 @@ function StoreBadges({ o }: { o: Offer }) {
         </Badge>
       )}
       {o.tags
-        .filter((t) => !/% off$|^Coupon$|^Inflated discount$/.test(t))
+        .filter((t) => !/% off$|^Coupon$|^Inflated discount$|^Check this price$|^Unverified seller$/.test(t))
         .slice(0, 2)
         .map((t) => (
           <Badge key={t}>{t}</Badge>
@@ -129,10 +131,10 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
                       {o.sellerNote && <span className="text-[12px] text-muted">{o.sellerNote}</span>}
                     </div>
                     <StoreBadges o={o} />
-                    {o.discountNote && (
+                    {(o.priceWarning ?? o.discountNote) && (
                       <p className="mt-2 flex max-w-sm gap-1.5 text-[12px] leading-snug text-warning">
                         <AlertIcon size={14} className="mt-px shrink-0" />
-                        {o.discountNote}
+                        {o.priceWarning ?? o.discountNote}
                       </p>
                     )}
                   </td>
@@ -207,7 +209,9 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
                 <dd className="text-right">{o.returns?.label ?? 'Not listed'}</dd>
               </dl>
               <StoreBadges o={o} />
-              {o.discountNote && <p className="mt-2 text-[12px] leading-snug text-warning">{o.discountNote}</p>}
+              {(o.priceWarning ?? o.discountNote) && (
+                <p className="mt-2 text-[12px] leading-snug text-warning">{o.priceWarning ?? o.discountNote}</p>
+              )}
               <div className="mt-3 flex justify-end">
                 <GoButton o={o} compact />
               </div>

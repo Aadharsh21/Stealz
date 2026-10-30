@@ -1,7 +1,7 @@
 // Filtering and sorting of search results in the browser (no extra API calls).
 
 import type { Listing, ProductGroup } from './types';
-import { cheapestOf, effectiveDays, effectiveTotal, fastestOf, rankOffers } from './scoring';
+import { cheapestOf, effectiveDays, effectiveTotal, fastestOf, isFlagged, rankOffers } from './scoring';
 import { discountPercent } from './offer';
 import { CLOSE_MATCH } from './text';
 
@@ -53,7 +53,7 @@ export function listingPasses(l: Listing, f: ResultFilters): boolean {
   if (f.freeShipping && !l.shipping.free) return false;
   if (f.maxDays != null && (l.delivery.maxDays == null || l.delivery.maxDays > f.maxDays)) return false;
   if (f.onSale && (l.originalPrice == null || l.discountNote)) return false;
-  if (f.hideMarketplaces && l.isMarketplace) return false;
+  if (f.hideMarketplaces && (l.isMarketplace || isFlagged(l))) return false;
   if (f.exactOnly && l.match < 0.99) return false;
   if (f.stores.length > 0 && !f.stores.includes(l.store)) return false;
   if (f.minPrice != null && l.total < f.minPrice) return false;

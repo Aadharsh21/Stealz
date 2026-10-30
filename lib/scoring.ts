@@ -30,6 +30,18 @@ function available<T extends Offer>(offers: T[]): T[] {
   return inStock.length ? inStock : offers;
 }
 
+/** True for offers we warn about: suspiciously low prices and unverified sellers. */
+export function isFlagged(o: Offer): boolean {
+  return Boolean(o.priceWarning) || o.tags.includes('Unverified seller');
+}
+
+/** Offers that can win "lowest total" or "fastest": in stock and not flagged, when possible. */
+function contenders<T extends Offer>(offers: T[]): T[] {
+  const list = available(offers);
+  const trusted = list.filter((o) => !isFlagged(o));
+  return trusted.length ? trusted : list;
+}
+
 /**
  * Lower score is better. Each extra day of waiting costs a share of the price that grows with
  * the speed weight: at the default weight a day is worth about 1% of the price.
@@ -40,8 +52,9 @@ export function rankOffers<T extends Offer>(offers: T[], speedWeight = DEFAULT_S
   const w = Math.min(1, Math.max(0, speedWeight));
   const totals = list.map(effectiveTotal);
   const days = list.map(effectiveDays);
-  const minTotal = Math.min(...totals);
-  const minDays = Math.min(...days);
+  const base = contenders(list);
+  const minTotal = Math.min(...base.map(effectiveTotal));
+  const minDays = Math.min(...base.map(effectiveDays));
   const perDay = w >= 0.999 ? 1e6 : (w / (1 - w)) * 0.02;
   return list
     .map((offer, i) => {
@@ -51,7 +64,8 @@ export function rankOffers<T extends Offer>(offers: T[], speedWeight = DEFAULT_S
       if (offer.returns?.none) score += 0.04;
       else if (offer.returns?.free) score -= 0.01;
       if (offer.isMarketplace) score += 0.02;
-      if (offer.tags.includes('Unverified seller')) score += 0.15;
+      if (offer.tags.includes('Unverified seller')) score += 0.5;
+      if (offer.priceWarning) score += 10;
       if (offer.isBrandStore) score -= 0.01;
       if (offer.rating != null && offer.rating < 3.5) score += 0.03;
       return { offer, score };
@@ -60,13 +74,13 @@ export function rankOffers<T extends Offer>(offers: T[], speedWeight = DEFAULT_S
 }
 
 export function cheapestOf<T extends Offer>(offers: T[]): T | undefined {
-  return [...available(offers)].sort(
+  return [...contenders(offers)].sort(
     (a, b) => effectiveTotal(a) - effectiveTotal(b) || effectiveDays(a) - effectiveDays(b),
   )[0];
 }
 
 export function fastestOf<T extends Offer>(offers: T[]): T | undefined {
-  const known = available(offers).filter((o) => o.delivery.maxDays != null);
+  const known = contenders(offers).filter((o) => o.delivery.maxDays != null);
   return [...known].sort((a, b) => effectiveDays(a) - effectiveDays(b) || effectiveTotal(a) - effectiveTotal(b))[0];
 }
 

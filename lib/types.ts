@@ -103,6 +103,8 @@ export interface Offer {
   sellerNote?: string;
   /** Set when the store's "was" price looks inflated compared with other stores. */
   discountNote?: string;
+  /** Set when the price is far below what this item usually costs (possible fake or wrong item). */
+  priceWarning?: string;
   /** "In store, 3 mi" style availability near the shopper. */
   nearby?: string;
   tags: string[];

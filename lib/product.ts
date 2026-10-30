@@ -5,18 +5,18 @@ import type { Listing, Offer, ProductDetails, ProductRef, ProductResponse, Resol
 import { COUNTRIES } from './countries';
 import { config, dataMode, ebayEnabled, emailEnabled, googleEnabled, hasDatabase } from './config';
 import { cacheGet, cacheSet } from './cache';
-import { computeDealScore, markInflatedDiscounts, summarizeHistory } from './deal';
+import { computeDealScore, markInflatedDiscounts, markPriceOutliers, summarizeHistory } from './deal';
 import { AppError } from './errors';
 import { getHistory, recordSnapshots, snapshotRows } from './history';
 import { takeLiveCredit } from './limits';
 import { locationKey, resolveLocation } from './location';
-import { buildListings, isUsedItem, itemToOffer, offerContext } from './normalize';
+import { buildListings, flagSuspiciousListings, isUsedItem, itemToOffer, offerContext } from './normalize';
 import { demoHistory, demoProduct } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { googleProduct } from './providers/serpapi';
 import { ProviderError } from './providers/types';
 import type { ProviderItem, ProviderProductResult } from './providers/types';
-import { cheapestOf, effectiveTotal } from './scoring';
+import { cheapestOf, effectiveTotal, isFlagged } from './scoring';
 import { checkVisitorLimit, getSearchItems } from './search';
 import { jaccard, keyTokens, normalize, productKey } from './text';
 
@@ -138,7 +138,7 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
   const loc = await resolveLocation(input.location, input.tz);
   const raw = await getProductItems(ref, loc, input.ip, input.fresh);
 
-  let offers = offersFromItems(raw.items, loc, now);
+  let offers = markPriceOutliers(offersFromItems(raw.items, loc, now));
   if (offers.length === 0) {
     throw new AppError('No stores have this item new right now. Try searching again.', 404, 'not_found');
   }
@@ -160,10 +160,10 @@ export async function runProduct(input: ProductInput): Promise<ProductOutcome> {
   let similar: Listing[] = [];
   const search = await getSearchItems(ref.q, loc, input.ip, { cachedOnly: true, now }).catch(() => null);
   if (search) {
-    const { listings } = buildListings(search.items, ref.q, loc, now);
+    const listings = flagSuspiciousListings(buildListings(search.items, ref.q, loc, now).listings);
     const seenKeys = new Set<string>([ref.k]);
     similar = listings
-      .filter((l) => !seenKeys.has(l.productKey) && l.total < best.total * 0.98 && !sameProductListing(l, ref))
+      .filter((l) => !isFlagged(l) && !seenKeys.has(l.productKey) && l.total < best.total * 0.98 && !sameProductListing(l, ref))
       .sort((a, b) => b.match - a.match || a.total - b.total)
       .filter((l) => (seenKeys.has(l.productKey) ? false : (seenKeys.add(l.productKey), true)))
       .slice(0, 6);

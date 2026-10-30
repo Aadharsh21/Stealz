@@ -9,7 +9,7 @@ import { AppError, secondsUntil } from './errors';
 import { recordSnapshots, snapshotRows } from './history';
 import { hitCounter, takeLiveCredit } from './limits';
 import { locationKey, resolveLocation } from './location';
-import { buildListings, groupListings, storeCounts, summarize } from './normalize';
+import { buildListings, flagSuspiciousListings, groupListings, storeCounts, summarize } from './normalize';
 import { demoSearch } from './providers/demo';
 import { searchEbay } from './providers/ebay';
 import { searchGoogleShopping } from './providers/serpapi';
@@ -120,7 +120,9 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
   const now = input.now ?? new Date();
   const loc = await resolveLocation(input.location, input.tz);
   const raw = (await getSearchItems(query, loc, input.ip, { now })) as RawSearch;
-  const { listings, hiddenUsed } = buildListings(raw.items, query, loc, now);
+  const built = buildListings(raw.items, query, loc, now);
+  const listings = flagSuspiciousListings(built.listings);
+  const hiddenUsed = built.hiddenUsed;
   const groups = groupListings(listings);
   const response: SearchResponse = {
     query,

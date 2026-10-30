@@ -7,7 +7,7 @@ import { COUNTRIES } from './countries';
 import { makeShipping, unknownDelivery } from './delivery';
 import type { ParseContext } from './delivery';
 import { round2 } from './money';
-import { cleanStoreName, domainOf, faviconFor, isBrandStore, isLowTrustStore, isMarketplace } from './stores';
+import { cleanStoreName, domainOf, faviconFor, isBrandStore, isLowTrustStore, isMarketplace, isSuspiciousStore } from './stores';
 import { taxFor } from './tax';
 import { cleanTitle, hash32 } from './text';
 
@@ -73,7 +73,7 @@ export function finalizeOffer(raw: RawOffer, ctx: OfferContext): Offer {
   if (pct != null) tags.add(`${pct}% off`);
   if (raw.coupon) tags.add('Coupon');
   const marketplace = raw.source === 'ebay' || isMarketplace(raw.store, domain);
-  if (isLowTrustStore(raw.store, domain)) tags.add('Unverified seller');
+  if (isLowTrustStore(raw.store, domain) || isSuspiciousStore(raw.store, domain, ctx.country)) tags.add('Unverified seller');
 
   return {
     id: hash32(`${raw.source}|${raw.store}|${title}|${raw.price}|${raw.link ?? ''}`),

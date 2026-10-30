@@ -32,6 +32,8 @@ function sellerBadges(l: Listing) {
   const pct = l.discountNote ? null : discountPercent(l.price, l.originalPrice);
   return (
     <>
+      {l.priceWarning && <Badge tone="warn">Check this price</Badge>}
+      {l.tags.includes('Unverified seller') && <Badge tone="warn">Unverified seller</Badge>}
       {pct != null && <Badge tone="sale">{pct}% off</Badge>}
       {l.discountNote && <Badge tone="warn">Inflated discount</Badge>}
       {l.shipping.free && <Badge>Free shipping</Badge>}

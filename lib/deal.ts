@@ -3,6 +3,7 @@
 import type { DealScore, HistoryPoint, HistoryResponse, Offer } from './types';
 import { formatMoney, round2 } from './money';
 import { cheapestOf, effectiveTotal } from './scoring';
+import { isKnownRetailer } from './stores';
 
 export function median(values: number[]): number | null {
   const v = values.filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
@@ -71,6 +72,27 @@ export function findInflatedDiscounts(offers: Offer[], history?: HistoryResponse
     }
   }
   return notes;
+}
+
+/**
+ * Flags offers priced far below what the same item usually costs. These are often fakes, used
+ * items listed as new, or a different product, so they shouldn't win "lowest total". Stores we
+ * recognize get more leeway; unverified sellers get less. Needs at least 4 prices to judge.
+ */
+export function markPriceOutliers<T extends Offer>(offers: T[], reference: Offer[] = offers): T[] {
+  const prices = reference.map((o) => o.price).filter((p) => p > 0);
+  if (prices.length < 4) return offers;
+  const typical = median(prices) as number;
+  return offers.map((o) => {
+    const limit = isKnownRetailer(o.store, o.storeDomain) ? 0.35 : o.tags.includes('Unverified seller') ? 0.75 : 0.6;
+    if (o.price >= typical * limit) return o;
+    const below = Math.round((1 - o.price / typical) * 100);
+    return {
+      ...o,
+      priceWarning: `${below}% below the usual ${formatMoney(typical, o.currency)}. It could be a fake, a used item or a different product, so check the seller first.`,
+      tags: o.tags.includes('Check this price') ? o.tags : [...o.tags, 'Check this price'],
+    };
+  });
 }
 
 /** Applies the inflated-discount notes to the offers (adds a tag and a note). */
