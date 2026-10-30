@@ -67,13 +67,14 @@ export function parseEbayItems(items: EbayItem[]): ProviderItem[] {
     if (!it.title || price == null || price <= 0 || (it.price?.currency && it.price.currency !== 'USD')) continue;
     const ship = it.shippingOptions?.[0];
     const shipCost = amount(ship?.shippingCost);
-    const seller = it.seller?.username;
+    // Seller usernames are eBay user data. They're never kept, so nothing about eBay members is
+    // stored in the cache or price history (required for eBay's "not persisting eBay data" opt-out).
     const feedback = it.seller?.feedbackPercentage;
     const original = amount(it.marketingPrice?.originalPrice);
     out.push({
       source: 'ebay',
       title: it.title,
-      store: seller ? `eBay · ${seller}` : 'eBay',
+      store: 'eBay',
       storeLogo: 'https://www.google.com/s2/favicons?domain=ebay.com&sz=64',
       link: it.itemAffiliateWebUrl ?? it.itemWebUrl,
       image: it.image?.imageUrl ?? it.thumbnailImages?.[0]?.imageUrl,
