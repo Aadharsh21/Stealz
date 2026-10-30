@@ -9,7 +9,7 @@ import { cacheGet, cacheSet } from './cache';
 import { COUNTRIES } from './countries';
 import { toAppError } from './errors';
 import { runSearch } from './search';
-import { detectBrand } from './text';
+import { detectBrand, hash32 } from './text';
 
 const FRESH_MS = 14 * 86400 * 1000;
 const KEEP_SECONDS = 60 * 86400;
@@ -21,7 +21,7 @@ interface StoredPicks {
 
 export async function getPicks(tab: PickTab, country: CountryCode): Promise<PicksResponse> {
   const def = PICK_TABS.find((t) => t.id === tab) ?? PICK_TABS[0];
-  const key = `picks:v1:${country}:${tab}`;
+  const key = `picks:v2:${country}:${tab}:${hash32(def.query)}`;
   const saved = await cacheGet<StoredPicks>(key);
   // Brand names are re-read so saved picks benefit from newly recognized brands.
   const stored = saved && { ...saved, items: saved.items.map((p) => ({ ...p, brand: p.brand ?? detectBrand(p.title) })) };

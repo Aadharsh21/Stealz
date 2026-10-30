@@ -3,9 +3,10 @@
 import type { CurrencyCode } from './types';
 
 export const PICK_TABS = [
-  { id: 'women', label: 'Women', query: "women's designer handbags" },
+  { id: 'women', label: 'Women', query: "women's designer clothing" },
   { id: 'men', label: 'Men', query: "men's designer jackets" },
   { id: 'kids', label: 'Kids', query: 'kids sneakers' },
+  { id: 'bags', label: 'Bags', query: "women's designer handbags" },
   { id: 'sneakers', label: 'Sneakers', query: 'best selling sneakers' },
   { id: 'accessories', label: 'Accessories', query: 'designer accessories' },
 ] as const;
