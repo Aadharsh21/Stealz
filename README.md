@@ -155,17 +155,16 @@ and **other colors**.
 ## 🔄 How it works
 
 ```mermaid
-flowchart LR
+flowchart TB
     A["🔍 coach tabby bag"] --> B{"⚡ Searched in the<br/>last 6 hours?"}
-    B -- "yes" --> F
-    B -- "no" --> C["🛡️ Rate limit +<br/>daily budget check"]
-    C --> D["🛒 Google Shopping<br/>+ eBay in the US"]
-    D --> F["🧩 Group the same item<br/>across stores"]
-    F --> G["🕵️ Drop fakes, used<br/>and inflated deals"]
-    G --> H["🧾 Price + shipping + tax<br/>for your address"]
-    H --> I["🚚 Delivery dates"]
-    I --> J["🎯 Deal score"]
-    J --> K["✅ Cheapest · fastest<br/>· every store"]
+    B -- "yes, free" --> F
+    B -- "no" --> C["🛡️ Rate limit + daily budget"]
+    C --> D["🛒 Google Shopping + eBay"]
+    D --> F["🧩 Group the same item across stores"]
+    F --> G["🕵️ Drop fakes, used and inflated deals"]
+    G --> H["🧾 Price + shipping + tax for your address"]
+    H --> I["🚚 Delivery dates  ·  🎯 Deal score"]
+    I --> K["✅ Cheapest, fastest, every store"]
 ```
 
 <details>
