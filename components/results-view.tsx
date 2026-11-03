@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { SearchResponse } from '@/lib/types';
@@ -11,11 +11,12 @@ import { DEFAULT_FILTERS, SORT_LABELS, activeFilterCount, cheapestListing, filte
 import { addRecentSearch } from '@/lib/storage';
 import { popularSearches } from '@/lib/suggestions';
 import { AlertIcon, GridIcon, InfoIcon, ListIcon, SlidersIcon, TagIcon, XIcon } from './icons';
+import { Sheet } from './sheet';
 import { useLocation } from './location-provider';
 import { MoreStores } from './more-stores';
 import { ListingRow, ProductCard } from './product-card';
 import { ResultsFilters } from './results-filters';
-import { Notice, Skeleton, buttonClass } from './ui';
+import { Notice, Segmented, Skeleton, buttonClass, chipClass } from './ui';
 import { VerdictStrip } from './verdict-strip';
 
 type State =
@@ -35,17 +36,17 @@ function taxPhrase(data: SearchResponse): string {
 function ResultsSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading prices">
-      <Skeleton className="h-8 w-72" />
+      <Skeleton className="h-9 w-72 max-w-full" />
       <Skeleton className="mt-3 h-4 w-96 max-w-full" />
       <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-[170px] rounded-2xl" />
+          <Skeleton key={i} className="h-[178px] rounded-card" />
         ))}
       </div>
-      <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }, (_, i) => (
           <div key={i}>
-            <Skeleton className="aspect-square rounded-xl" />
+            <Skeleton className="aspect-square rounded-tile" />
             <Skeleton className="mt-3 h-4 w-4/5" />
             <Skeleton className="mt-2 h-6 w-1/2" />
           </div>
@@ -67,7 +68,7 @@ export function ResultsView() {
   const [filters, setFilters] = useState<ResultFilters>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<SortKey>('relevance');
   const [view, setView] = useState<'products' | 'listings'>('products');
-  const filterDialog = useRef<HTMLDialogElement>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const locationKey = location ? `${location.country}|${location.postalCode ?? ''}|${location.city ?? ''}|${location.regionCode ?? ''}` : '';
 
@@ -104,8 +105,8 @@ export function ResultsView() {
   if (!query) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h1 className="type-wide text-[28px] font-extrabold tracking-[-0.03em]">What are you shopping for?</h1>
-        <p className="mt-2 text-ink-soft">Use the search box above to compare prices across stores.</p>
+        <h1 className="text-title2">What are you shopping for?</h1>
+        <p className="mt-2 text-callout text-ink-soft">Use the search box above to compare prices across stores.</p>
       </div>
     );
   }
@@ -114,14 +115,15 @@ export function ResultsView() {
     ? [data.hiddenUsed > 0 ? `${data.hiddenUsed} used or pre-owned` : '', data.hiddenFakes > 0 ? `${data.hiddenFakes} likely fake` : ''].filter(Boolean)
     : [];
   const hiddenNote = hiddenParts.length ? `${hiddenParts.join(' and ')} listings hidden` : '';
+  const shown = view === 'products' ? groups.length : listings.length;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pt-8">
       {(state.status === 'loading' || state.status === 'idle') && <ResultsSkeleton />}
 
       {state.status === 'error' && (
         <div className="max-w-2xl">
-          <h1 className="type-wide text-[26px] font-extrabold tracking-[-0.03em]">Prices for &ldquo;{query}&rdquo;</h1>
+          <h1 className="break-words text-title2">Prices for &ldquo;{query}&rdquo;</h1>
           <div className="mt-6">
             <Notice tone={state.code === 'rate_limited' || state.code === 'budget' ? 'warn' : 'error'} icon={<AlertIcon />}>
               <p>{state.message}</p>
@@ -136,18 +138,17 @@ export function ResultsView() {
       {data && (
         <>
           <header>
-            <h1 className="type-wide text-[26px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[32px]">
-              Prices for &ldquo;{data.query}&rdquo;
-            </h1>
-            <p className="mt-2 text-[15px] text-ink-soft">
-              {data.listings.length} new listings from {data.stores.length} stores, delivered to{' '}
-              <button type="button" onClick={openPicker} className="font-semibold text-ink underline underline-offset-2">
+            <h1 className="break-words text-title2">Prices for &ldquo;{data.query}&rdquo;</h1>
+            <p className="mt-2 text-callout text-ink-soft">
+              {data.listings.length} new {data.listings.length === 1 ? 'listing' : 'listings'} from {data.stores.length}{' '}
+              {data.stores.length === 1 ? 'store' : 'stores'}, delivered to{' '}
+              <button type="button" onClick={openPicker} className="font-semibold text-ink underline decoration-line-strong decoration-1 underline-offset-[0.2em] [overflow-wrap:anywhere] hover:decoration-current">
                 {data.location.label}
               </button>
               . {taxPhrase(data)}.
             </p>
             {(!data.demo || hiddenNote) && (
-              <p className="mt-1 text-[13px] text-muted">
+              <p className="mt-1 text-footnote text-muted">
                 {data.demo
                   ? hiddenNote
                   : `Checked ${timeAgo(data.fetchedAt)} from ${data.sources.join(' and ') || COUNTRIES[data.location.country].name}${
@@ -175,53 +176,46 @@ export function ResultsView() {
 
           {data.listings.length === 0 ? (
             <div className="mt-10 max-w-xl">
-              <h2 className="text-[18px] font-bold">No new listings found</h2>
-              <p className="mt-2 text-ink-soft">
+              <h2 className="text-title3">No new listings found</h2>
+              <p className="mt-2 text-callout text-ink-soft">
                 Try fewer words, check the spelling, or search the brand and model, like &ldquo;Coach Tabby 26&rdquo;.
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {popularSearches(data.location.country).map((q) => (
-                  <Link key={q} href={`/search?q=${encodeURIComponent(q)}`} className="rounded-full bg-canvas px-3 py-1.5 text-[14px] ring-1 ring-line hover:bg-paper">
+                  <Link key={q} href={`/search?q=${encodeURIComponent(q)}`} className={chipClass(false)}>
                     {q}
                   </Link>
                 ))}
               </div>
-              <div className="mt-10">
+              <div className="mt-12">
                 <MoreStores country={data.location.country} query={data.query} />
               </div>
             </div>
           ) : (
             <>
-              <div className="mt-6">
+              <div className="mt-7">
                 <VerdictStrip summary={data.summary} />
                 {data.summary.scope === 'all' && (
-                  <p className="mt-2 text-[13px] text-muted">No exact matches, so these cover all similar items.</p>
+                  <p className="mt-2 text-footnote text-muted">No exact matches, so these cover all similar items.</p>
                 )}
               </div>
 
-              <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[232px_1fr]">
+              <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[236px_minmax(0,1fr)]">
                 <aside className="hidden lg:block" aria-label="Filters">
-                  <div className="sticky top-24">
+                  <div className="sticky top-20">
                     <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} />
                   </div>
                 </aside>
 
-                <section aria-label="Results">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => filterDialog.current?.showModal()}
-                      className={`${buttonClass('secondary', 'sm')} lg:hidden`}
-                    >
+                <section aria-label="Results" className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+                    <div className="shelf -mx-4 flex min-w-0 max-w-[calc(100%+2rem)] flex-1 items-center gap-2 overflow-x-auto px-4 py-1 scrollbar-none sm:mx-0 sm:max-w-full sm:flex-none sm:overflow-visible sm:px-0">
+                    <button type="button" onClick={() => setFiltersOpen(true)} className={`${buttonClass('secondary', 'sm')} lg:hidden`}>
                       <SlidersIcon size={16} /> Filters{filterCount > 0 ? ` (${filterCount})` : ''}
                     </button>
-                    <label className="flex items-center gap-2 text-[14px]">
-                      <span className="text-muted">Sort by</span>
-                      <select
-                        value={sort}
-                        onChange={(e) => setSort(e.target.value as SortKey)}
-                        className="h-8 rounded-full bg-paper px-3 text-[13px] font-semibold ring-1 ring-line-strong focus:outline-none focus:ring-2 focus:ring-focus"
-                      >
+                    <label className="flex items-center gap-2">
+                      <span className="sr-only">Sort by</span>
+                      <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="select">
                         {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
                           <option key={k} value={k}>
                             {SORT_LABELS[k]}
@@ -234,79 +228,85 @@ export function ResultsView() {
                         type="button"
                         onClick={() => setFilters((f) => ({ ...f, onSale: !f.onSale }))}
                         aria-pressed={filters.onSale}
-                        className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ring-1 transition-colors ${
-                          filters.onSale ? 'bg-markdown/15 text-markdown ring-markdown/50' : 'text-ink-soft ring-line-strong hover:bg-canvas'
-                        }`}
+                        className={
+                          filters.onSale
+                            ? "press relative inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-markdown/14 px-4 text-subhead font-semibold text-markdown after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
+                            : chipClass(false)
+                        }
                       >
-                        <TagIcon size={14} /> On sale ({saleCount})
+                        <TagIcon size={15} /> On sale ({saleCount})
                       </button>
                     )}
-                    <div className="ml-auto inline-flex rounded-full p-0.5 ring-1 ring-line-strong" role="group" aria-label="View">
-                      <button
-                        type="button"
-                        onClick={() => setView('products')}
-                        aria-pressed={view === 'products'}
-                        className={`inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${view === 'products' ? 'bg-ink text-paper' : 'text-ink-soft'}`}
-                      >
-                        <GridIcon size={14} /> Products
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setView('listings')}
-                        aria-pressed={view === 'listings'}
-                        className={`inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${view === 'listings' ? 'bg-ink text-paper' : 'text-ink-soft'}`}
-                      >
-                        <ListIcon size={14} /> All listings
-                      </button>
                     </div>
+                    <Segmented
+                      label="View"
+                      className="w-full sm:ml-auto sm:w-auto"
+                      value={view}
+                      onChange={setView}
+                      options={[
+                        { value: 'products', label: <><GridIcon size={15} /> Products</> },
+                        { value: 'listings', label: <><ListIcon size={15} /> All listings</> },
+                      ]}
+                    />
                   </div>
 
-                  {(view === 'products' ? groups.length : listings.length) === 0 ? (
-                    <div className="mt-10">
-                      <p className="font-semibold">Nothing matches these filters.</p>
-                      <button type="button" onClick={() => setFilters(DEFAULT_FILTERS)} className={`${buttonClass('secondary', 'sm')} mt-3`}>
+                  {shown === 0 ? (
+                    <div className="mt-10 rounded-card bg-canvas p-6">
+                      <p className="text-headline">Nothing matches these filters.</p>
+                      <p className="mt-1 text-subhead text-muted">Try widening the price or delivery range.</p>
+                      <button type="button" onClick={() => setFilters(DEFAULT_FILTERS)} className={`${buttonClass('primary', 'sm')} mt-4`}>
                         Clear filters
                       </button>
                     </div>
                   ) : view === 'products' ? (
-                    <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-9 md:grid-cols-3 xl:grid-cols-4">
+                    <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
                       {groups.map((g) => (
                         <ProductCard key={g.key} group={g} isCheapest={cheapest != null && g.listings.some((l) => l.id === cheapest.id)} />
                       ))}
                     </div>
                   ) : (
-                    <ul className="mt-4 border-t border-line">
+                    <ul className="divide-hairline hairline-t mt-4">
                       {listings.map((l) => (
                         <ListingRow key={l.id} listing={l} isCheapest={cheapest?.id === l.id} />
                       ))}
                     </ul>
                   )}
-                  <div className="mt-14 border-t border-line pt-8">
+                  <div className="hairline-t mt-14 pt-8">
                     <MoreStores country={data.location.country} query={data.query} />
                   </div>
                 </section>
               </div>
 
-              <dialog
-                ref={filterDialog}
-                onClick={(e) => {
-                  if (e.target === filterDialog.current) filterDialog.current?.close();
-                }}
-                className="m-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl bg-paper p-0 text-ink backdrop:bg-black/70 lg:hidden"
-                aria-label="Filters"
-              >
-                <div className="p-5">
-                  <div className="mb-2 flex justify-end">
-                    <button type="button" onClick={() => filterDialog.current?.close()} className={buttonClass('ghost', 'sm')} aria-label="Close filters">
-                      <XIcon />
+              <Sheet open={filtersOpen} onClose={() => setFiltersOpen(false)} labelledBy="filters-sheet-title" className="lg:hidden">
+                <div data-sheet-handle className="flex items-center justify-between gap-3 px-5 pb-2 pt-2 sm:pt-5">
+                  <h2 id="filters-sheet-title" className="text-title3">
+                    Filters
+                  </h2>
+                  <div className="flex items-center gap-1">
+                    {filterCount > 0 && (
+                      <button type="button" onClick={() => setFilters(DEFAULT_FILTERS)} className="press rounded-full px-3 py-2 text-subhead font-semibold text-accent-ink hover:bg-fill">
+                        Clear all
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="press grid h-8 w-8 place-items-center rounded-full bg-fill text-ink-soft hover:bg-fill-strong"
+                      aria-label="Close filters"
+                    >
+                      <XIcon size={15} strokeWidth={2.4} />
                     </button>
                   </div>
-                  <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} />
-                  <button type="button" onClick={() => filterDialog.current?.close()} className={`${buttonClass('primary', 'lg')} mt-6 w-full`}>
-                    Show {view === 'products' ? groups.length : listings.length} results
+                </div>
+                <div className="px-5 pb-4">
+                  <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} showTitle={false} />
+                </div>
+                <div className="material-thick sticky bottom-0 px-5 pb-4 pt-3">
+                  <button type="button" onClick={() => setFiltersOpen(false)} className={`${buttonClass('primary', 'lg')} w-full`}>
+                    Show {shown} {shown === 1 ? 'result' : 'results'}
                   </button>
                 </div>
-              </dialog>
+              </Sheet>
             </>
           )}
         </>

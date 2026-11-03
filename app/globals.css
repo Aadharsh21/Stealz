@@ -1,28 +1,123 @@
 @import "tailwindcss";
 
-/* Stealz design tokens: a jewelry-house look.
-   Charcoal and ivory, with champagne kept for what matters most: the best price.
-   One theme for everyone, whatever the device's light or dark setting. */
+/* Stealz design system, built to Apple's interface criteria:
+   - the platform's own font (SF Pro on Apple devices, Inter everywhere else), with
+     size-specific tracking and leading;
+   - translucent materials for floating chrome, filled surfaces instead of outlines;
+   - instant press feedback, springs for anything that moves, short exits;
+   - colors that follow the device's light or dark setting.
+   Champagne gold stays for the one thing that matters most: the best price. */
+
 :root {
-  --paper: #141312;
-  --canvas: #1d1b18;
-  --smoke: #26241f;
-  --plinth: #efeae1;
-  --ink: #f2eee6;
-  --ink-soft: #d3ccc0;
-  --muted: #9c9487;
-  --line: #2f2c27;
-  --line-strong: #4a453d;
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --paper: #ffffff;
+  --canvas: #f5f5f7;
+  --smoke: #e8e8ed;
+  --plinth: #f5f5f7;
+
+  /* Labels */
+  --ink: #1d1d1f;
+  --ink-soft: #424245;
+  --muted: #6e6e73;
+
+  /* Separators and fills */
+  --line: rgba(0, 0, 0, 0.09);
+  --line-strong: rgba(0, 0, 0, 0.16);
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+
+  /* Brand and status */
   --sticker: #c9a86a;
-  --sticker-ink: #141312;
-  --markdown: #e08a7e;
-  --series: #c9a86a;
-  --series-wash: rgba(201, 168, 106, 0.12);
-  --good: #8dc2a0;
-  --warning: #e9a15f;
-  --critical: #ee7f75;
-  --focus: #c9a86a;
-  color-scheme: dark;
+  --sticker-ink: #1d1d1f;
+  --accent-ink: #7d5f24;
+  --markdown: #c4000f;
+  --series: #ad8540;
+  --series-wash: rgba(201, 168, 106, 0.22);
+  --good: #18702f;
+  --warning: #9a4500;
+  --critical: #c4000f;
+  --focus: #a07a32;
+
+  /* Materials and depth */
+  --bar: rgba(255, 255, 255, 0.72);
+  --thick: rgba(252, 252, 253, 0.96);
+  --sheet: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.32);
+  --knob: #ffffff;
+  --skeleton-shine: rgba(255, 255, 255, 0.55);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.02);
+  --shadow-raised: 0 2px 6px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.07);
+  --shadow-float: 0 2px 10px rgba(0, 0, 0, 0.06), 0 18px 48px rgba(0, 0, 0, 0.16);
+  --edge: rgba(0, 0, 0, 0.06);
+
+  /* 1 device pixel on retina screens, like Apple's separators */
+  --hairline: 1px;
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --hairline: 0.5px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #000000;
+    --canvas: #1c1c1e;
+    --smoke: #2c2c2e;
+    --plinth: #ececf0;
+
+    --ink: #f5f5f7;
+    --ink-soft: #c7c7cc;
+    --muted: #98989d;
+
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.2);
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-strong: rgba(118, 118, 128, 0.36);
+
+    --accent-ink: #d9bd84;
+    --markdown: #ff6961;
+    --series: #c9a86a;
+    --series-wash: rgba(201, 168, 106, 0.2);
+    --good: #30d158;
+    --warning: #ff9f0a;
+    --critical: #ff453a;
+    --focus: #d9bd84;
+
+    --bar: rgba(22, 22, 23, 0.72);
+    --thick: rgba(36, 36, 38, 0.95);
+    --sheet: #1c1c1e;
+    --scrim: rgba(0, 0, 0, 0.55);
+    --knob: #ffffff;
+    --skeleton-shine: rgba(255, 255, 255, 0.07);
+    --shadow-soft: none;
+    --shadow-raised: none;
+    --shadow-float: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 20px 56px rgba(0, 0, 0, 0.6);
+    --edge: rgba(255, 255, 255, 0.07);
+  }
+}
+
+/* Higher contrast when the device asks for it: firmer separators, brighter secondary text. */
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(0, 0, 0, 0.28);
+    --line-strong: rgba(0, 0, 0, 0.45);
+    --muted: #515154;
+    --bar: rgba(255, 255, 255, 0.97);
+    --thick: #ffffff;
+  }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root {
+    --line: rgba(255, 255, 255, 0.32);
+    --line-strong: rgba(255, 255, 255, 0.5);
+    --muted: #c7c7cc;
+    --bar: rgba(10, 10, 10, 0.97);
+    --thick: #1c1c1e;
+  }
 }
 
 @theme inline {
@@ -35,89 +130,810 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-fill: var(--fill);
+  --color-fill-strong: var(--fill-strong);
   --color-sticker: var(--sticker);
   --color-sticker-ink: var(--sticker-ink);
+  --color-accent-ink: var(--accent-ink);
   --color-markdown: var(--markdown);
   --color-series: var(--series);
   --color-good: var(--good);
   --color-warning: var(--warning);
   --color-critical: var(--critical);
   --color-focus: var(--focus);
-  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+
+  /* SF Pro on Apple devices; Inter (the closest open match) on Windows, Android and Linux. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), "Inter", system-ui, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-float: var(--shadow-float);
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
+@theme {
+  /* Apple's text styles. Each size carries its own leading and tracking: tight and negative
+     as type grows, looser and near zero as it shrinks. Sizes are in rem so they follow the
+     visitor's text-size setting. */
+  --text-display: clamp(2.75rem, 1.8rem + 4.6vw, 5rem);
+  --text-display--line-height: 1.03;
+  --text-display--letter-spacing: -0.032em;
+  --text-display--font-weight: 700;
+
+  --text-title1: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
+  --text-title1--line-height: 1.05;
+  --text-title1--letter-spacing: -0.028em;
+  --text-title1--font-weight: 700;
+
+  --text-title2: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
+  --text-title2--line-height: 1.1;
+  --text-title2--letter-spacing: -0.022em;
+  --text-title2--font-weight: 700;
+
+  --text-title3: 1.375rem;
+  --text-title3--line-height: 1.2;
+  --text-title3--letter-spacing: -0.018em;
+  --text-title3--font-weight: 600;
+
+  --text-intro: clamp(1.125rem, 1rem + 0.45vw, 1.3125rem);
+  --text-intro--line-height: 1.42;
+  --text-intro--letter-spacing: -0.012em;
+
+  --text-headline: 1.0625rem;
+  --text-headline--line-height: 1.3;
+  --text-headline--letter-spacing: -0.012em;
+  --text-headline--font-weight: 600;
+
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.47;
+  --text-body--letter-spacing: -0.012em;
+
+  --text-callout: 1rem;
+  --text-callout--line-height: 1.45;
+  --text-callout--letter-spacing: -0.01em;
+
+  --text-subhead: 0.9375rem;
+  --text-subhead--line-height: 1.4;
+  --text-subhead--letter-spacing: -0.006em;
+
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1.38;
+  --text-footnote--letter-spacing: 0em;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.33;
+  --text-caption--letter-spacing: 0.005em;
+
+  --radius-control: 0.75rem;
+  --radius-tile: 1.125rem;
+  --radius-card: 1.375rem;
+  --radius-panel: 1.75rem;
+
+  /* Motion. Strong ease-out for things that enter or respond, ease-in-out for things moving
+     on screen, the iOS drawer curve for sheets. Never ease-in. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-feature-settings: "kern" 1;
-  -webkit-font-smoothing: antialiased;
+/* Real springs where the browser supports them: Apple's critically damped default
+   (damping 1, response 0.4) and the slightly bouncy one for momentum (damping 0.8, response 0.3). */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.0327, 0.1092, 0.2062, 0.309, 0.409, 0.5015, 0.584, 0.656, 0.7177, 0.7698, 0.8133, 0.8493,
+      0.8788, 0.9029, 0.9225, 0.9383, 0.951, 0.9612, 0.9693, 0.9758, 0.9809, 0.985, 0.9882, 0.9908, 0.9928, 0.9944, 0.9956, 1);
+    --ease-bounce: linear(0, 0.037, 0.1263, 0.242, 0.3663, 0.4874, 0.5982, 0.6949, 0.7763, 0.8424, 0.8945, 0.9343, 0.9637,
+      0.9845, 0.9985, 1.0074, 1.0124, 1.0147, 1.0151, 1.0144, 1.0129, 1.0111, 1.0092, 1.0074, 1.0057, 1.0043, 1.0032, 1.0022,
+      1.0014, 1.0009, 1.0005, 1.0002, 1);
+  }
 }
 
-::selection {
-  background: var(--sticker);
-  color: var(--sticker-ink);
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: 6rem;
+    scrollbar-gutter: stable;
+    background: var(--paper);
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    letter-spacing: var(--text-body--letter-spacing);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+
+  /* A modal sheet holds the page still behind it. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--sticker) 45%, transparent);
+  }
+
+  /* Keyboard focus. Kept in the base layer so a component can draw focus its own way
+     (text fields light up their whole field instead, so there is only ever one box). */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Taps fire immediately; controls don't select their label on a long press. */
+  a,
+  button,
+  summary,
+  label,
+  [role="button"],
+  [role="tab"],
+  [role="option"] {
+    touch-action: manipulation;
+  }
+  button,
+  summary,
+  [role="button"],
+  [role="tab"],
+  [role="option"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* 16px keeps iOS from zooming the page when a field is focused. */
+  input,
+  select,
+  textarea {
+    font-size: max(1rem, 16px);
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
-:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
+/* ---------- Typography helpers ---------- */
 
-/* Cormorant Garamond for headings and prices, Manrope for everything you read or tap.
-   These sit outside Tailwind's layers on purpose, so they win over weight and tracking
-   utilities left on the elements. */
-.type-wide,
-.type-cond {
-  font-family: var(--font-serif);
+/* Prices: tabular figures so they line up and don't jitter, a little tighter as they grow. */
+@utility price {
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  letter-spacing: -0.005em;
-  font-variant-numeric: lining-nums;
-  /* Cormorant's small x-height reads small next to Manrope; scale it up to match. */
-  font-size-adjust: 0.44;
+  letter-spacing: -0.02em;
 }
-.type-cond {
-  font-variant-numeric: lining-nums tabular-nums;
-  letter-spacing: 0;
-}
-.type-hero {
-  font-weight: 500;
-  letter-spacing: -0.015em;
-}
-.tnum {
+
+@utility tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* The champagne tag: marks the single best price in a view. */
+/* An old price, struck through quietly. */
+@utility was {
+  color: var(--muted);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--muted) 80%, transparent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Uppercase labels get positive tracking, never negative. */
+@utility eyebrow {
+  font-size: var(--text-caption);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Separators ---------- */
+
+@utility hairline-b {
+  border-bottom: var(--hairline) solid var(--line);
+}
+@utility hairline-t {
+  border-top: var(--hairline) solid var(--line);
+}
+@utility hairline-y {
+  border-block: var(--hairline) solid var(--line);
+}
+@utility divide-hairline {
+  & > :not(:last-child) {
+    border-bottom: var(--hairline) solid var(--line);
+  }
+}
+@utility edge {
+  box-shadow: inset 0 0 0 var(--hairline) var(--edge);
+}
+
+/* ---------- Response: feedback the instant a finger or pointer goes down ---------- */
+
+@utility press {
+  transition-property: transform, background-color, color, box-shadow, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+  &:active:not(:disabled) {
+    transform: scale(var(--press-scale, 0.97));
+  }
+}
+/* Big surfaces press in less, the way iOS cards do. */
+@utility press-soft {
+  transition-property: transform, background-color, box-shadow, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-out);
+  &:active {
+    transform: scale(var(--press-scale-soft, 0.985));
+  }
+}
+
+/* ---------- Materials ---------- */
+
+@utility material-bar {
+  background-color: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+@utility material-thick {
+  background-color: var(--thick);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+  backdrop-filter: saturate(180%) blur(30px);
+}
+
+/* The site header: part of the page at the top, a floating material once content
+   scrolls under it, with a hairline only where the two actually overlap. */
+.site-header {
+  background-color: color-mix(in srgb, var(--paper) 0%, transparent);
+  box-shadow: 0 0 0 transparent;
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.site-header[data-scrolled="true"] {
+  background-color: var(--bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 var(--hairline) 0 var(--line);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material-bar,
+  .site-header[data-scrolled="true"] {
+    background-color: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .material-thick {
+    background-color: var(--sheet);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ---------- Controls ---------- */
+
+/* Text fields light up as a whole when focused: one field, one ring. */
+.field {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding-inline: 0.875rem;
+  border-radius: var(--radius-control);
+  background-color: var(--fill);
+  transition:
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+.field:focus-within {
+  background-color: var(--paper);
+  box-shadow:
+    inset 0 0 0 1px var(--focus),
+    0 0 0 4px color-mix(in srgb, var(--focus) 24%, transparent);
+}
+.field :is(input, select, textarea) {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+}
+.field :is(input, select, textarea):focus,
+.field :is(input, select, textarea):focus-visible {
+  outline: none;
+}
+.field ::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* The search field. Same rule as .field: the field itself carries focus, the input inside
+   draws nothing of its own. */
+.search-field {
+  display: flex;
+  align-items: center;
+  border-radius: 999px;
+  background-color: var(--fill);
+  transition:
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+.search-field:focus-within {
+  background-color: var(--paper);
+  box-shadow:
+    inset 0 0 0 1px var(--focus),
+    0 0 0 4px color-mix(in srgb, var(--focus) 22%, transparent);
+}
+.search-field[data-size="lg"] {
+  background-color: var(--paper);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 0 0 var(--hairline) var(--line-strong);
+}
+.search-field[data-size="lg"]:focus-within {
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 0 0 1px var(--focus),
+    0 0 0 5px color-mix(in srgb, var(--focus) 22%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  .search-field[data-size="lg"],
+  .search-field[data-size="lg"]:focus-within {
+    background-color: var(--canvas);
+  }
+}
+.search-field input:focus,
+.search-field input:focus-visible {
+  outline: none;
+}
+.search-field input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* A pop-up button: native select (so phones show their own picker) dressed as a capsule. */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 2.25rem;
+  padding: 0 2.1rem 0 0.95rem;
+  border-radius: 999px;
+  background-color: var(--fill);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  color: var(--ink);
+  font-size: max(1rem, 16px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .select:hover {
+    background-color: var(--fill-strong);
+  }
+}
+
+/* Radio: a ring that fills in from the edge. */
+.radio {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--paper);
+  cursor: pointer;
+  transition:
+    border-width 180ms var(--ease-out),
+    border-color 150ms ease;
+}
+.radio:checked {
+  border-width: 0.375rem;
+  border-color: var(--sticker);
+}
+
+/* Checkbox: a rounded square that fills gold with a check. */
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.375rem;
+  background-color: var(--fill-strong);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.checkbox:checked {
+  background-color: var(--sticker);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+
+/* Switch (iOS style). The knob travels on a spring. */
+.switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  background-color: var(--fill-strong);
+  transition: background-color 220ms ease;
+}
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 999px;
+  background: var(--knob);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.16);
+  transition: transform 420ms var(--ease-spring);
+}
+input:checked + .switch-track {
+  background-color: var(--sticker);
+}
+input:checked + .switch-track::after {
+  transform: translateX(1.125rem);
+}
+input:focus-visible + .switch-track {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Slider (iOS style): thin track, gold to the left of a large white knob. */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.75rem;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.range:focus-visible {
+  outline: none;
+}
+.range::-webkit-slider-runnable-track {
+  height: 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--sticker) var(--pct, 50%), var(--fill-strong) var(--pct, 50%));
+}
+.range::-moz-range-track {
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--fill-strong);
+}
+.range::-moz-range-progress {
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--sticker);
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: -0.75rem;
+  border-radius: 999px;
+  background: var(--knob);
+  box-shadow:
+    0 0.5px 4px rgba(0, 0, 0, 0.12),
+    0 6px 13px rgba(0, 0, 0, 0.12),
+    0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 160ms ease;
+}
+.range::-moz-range-thumb {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--knob);
+  box-shadow:
+    0 0.5px 4px rgba(0, 0, 0, 0.12),
+    0 6px 13px rgba(0, 0, 0, 0.12);
+}
+.range:active::-webkit-slider-thumb {
+  transform: scale(1.08);
+}
+.range:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0.5px 4px rgba(0, 0, 0, 0.12),
+    0 0 0 4px color-mix(in srgb, var(--focus) 45%, transparent);
+}
+.range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 45%, transparent);
+}
+
+/* Segmented control: equal segments, the selected thumb slides across on a spring. */
+.segmented {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  padding: 0.125rem;
+  border-radius: 0.6875rem;
+  background-color: var(--fill);
+  isolation: isolate;
+}
+.segmented-thumb {
+  position: absolute;
+  z-index: -1;
+  top: 0.125rem;
+  bottom: 0.125rem;
+  left: 0.125rem;
+  border-radius: 0.5625rem;
+  background: var(--paper);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 3px 1px rgba(0, 0, 0, 0.04);
+  transition: transform 480ms var(--ease-spring);
+}
+@media (prefers-color-scheme: dark) {
+  .segmented-thumb {
+    background: #636366;
+    box-shadow: none;
+  }
+}
+
+/* The gold tag for the single best price in a view. */
 .sticker {
   background: var(--sticker);
   color: var(--sticker-ink);
 }
 
-/* Markdown pen: a was-price crossed out by hand. */
-.markdown {
-  position: relative;
-  color: var(--muted);
-  white-space: nowrap;
+/* ---------- Motion ---------- */
+
+/* Menus and popovers grow out of the field that opened them. */
+.popover {
+  transform-origin: top center;
+  transition:
+    opacity 150ms ease-out,
+    transform 200ms var(--ease-out);
 }
-.markdown::after {
+@starting-style {
+  .popover {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+/* Lists that arrive together cascade in, 40ms apart. Decorative, so it never blocks taps. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise, 10px));
+  }
+}
+.rise-in {
+  animation: rise-in 420ms var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 12) * 40ms);
+}
+
+/* The best-price tag settles in once results arrive. */
+@keyframes tag-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+.sticker-in {
+  animation: tag-in 260ms var(--ease-out) both;
+  animation-delay: 120ms;
+}
+
+/* When the best pick changes, the new one blurs in so two states never visibly overlap. */
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+.swap-in {
+  animation: swap-in 240ms var(--ease-out) both;
+}
+
+/* Photos fade in once they've loaded instead of popping in. */
+.photo {
+  transition:
+    opacity 280ms ease-out,
+    scale 500ms var(--ease-out);
+}
+.photo[data-loaded="false"] {
+  opacity: 0;
+}
+
+/* Skeletons: a soft sheen sweeping across the shapes of what's coming. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--fill);
+  border-radius: 0.5rem;
+}
+.skeleton::after {
   content: "";
   position: absolute;
-  left: -2px;
-  right: -2px;
-  top: 52%;
-  height: 2px;
-  background: var(--markdown);
-  border-radius: 2px;
-  transform: rotate(-8deg);
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+  animation: sheen 1.5s ease-in-out infinite;
 }
+@keyframes sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- Sheets and dialogs ---------- */
+
+/* A centered dialog on wide screens; a bottom sheet on phones. Both arrive on a spring and
+   leave the way they came, a little faster. */
+.sheet {
+  margin: auto;
+  padding: 0;
+  border: 0;
+  width: min(30rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: min(48rem, calc(100dvh - 3rem));
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 220ms ease-out,
+    transform 320ms var(--ease-out),
+    overlay 320ms allow-discrete,
+    display 320ms allow-discrete;
+}
+.sheet:not([open]) {
+  opacity: 0;
+  transform: scale(0.96);
+  transition-duration: 160ms;
+}
+@starting-style {
+  .sheet[open] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.sheet::backdrop {
+  background-color: transparent;
+  transition:
+    background-color 260ms ease,
+    overlay 260ms allow-discrete,
+    display 260ms allow-discrete;
+}
+.sheet[open]::backdrop {
+  background-color: var(--scrim);
+}
+@starting-style {
+  .sheet[open]::backdrop {
+    background-color: transparent;
+  }
+}
+.sheet-body {
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.grabber {
+  display: none;
+}
+
+@media (max-width: 639.98px) {
+  .sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-height: calc(100dvh - 2.5rem);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    transition:
+      transform 520ms var(--ease-drawer),
+      overlay 520ms allow-discrete,
+      display 520ms allow-discrete;
+  }
+  .sheet:not([open]) {
+    opacity: 1;
+    transform: translateY(100%);
+    transition-duration: 260ms;
+  }
+  @starting-style {
+    .sheet[open] {
+      opacity: 1;
+      transform: translateY(100%);
+    }
+  }
+  .sheet-body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .grabber {
+    display: block;
+    touch-action: none;
+    cursor: grab;
+  }
+}
+
+/* ---------- Reduced motion: gentler, not absent ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --press-scale: 1;
+    --press-scale-soft: 1;
+    --rise: 0px;
+  }
+  .press:active:not(:disabled),
+  .press-soft:active {
+    opacity: 0.7;
+  }
+  .skeleton::after {
+    animation: none;
+    opacity: 0;
+  }
+  .popover {
+    transition: opacity 150ms ease-out;
+  }
+  @starting-style {
+    .popover {
+      transform: none;
+    }
+  }
+  .sheet,
+  .sheet:not([open]) {
+    transform: none;
+    transition:
+      opacity 200ms ease,
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
+  }
+  .sheet:not([open]) {
+    opacity: 0;
+  }
+  @starting-style {
+    .sheet[open] {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  .sticker-in {
+    animation-name: fade-in;
+  }
+  .segmented-thumb,
+  .switch-track::after {
+    transition-duration: 0ms;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Utilities ---------- */
 
 .scrollbar-none {
   scrollbar-width: none;
@@ -126,58 +942,8 @@ body {
   display: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-@keyframes tag-in {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.sticker-in {
-  animation: tag-in 360ms ease-out both;
-}
-
-/* Picks rise in one after another when a category opens. */
-@keyframes pick-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.pick-in {
-  animation: pick-in 560ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-.skeleton {
-  background: linear-gradient(90deg, var(--canvas) 0px, var(--line) 80px, var(--canvas) 160px) var(--canvas);
-  background-size: 200px 100%;
-  background-repeat: no-repeat;
-  animation: shimmer 1.3s ease-in-out infinite;
-  border-radius: 8px;
+/* Horizontal shelves scroll on their own axis and don't drag the page or trigger back-swipe. */
+.shelf {
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
 }

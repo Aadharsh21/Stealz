@@ -6,7 +6,7 @@ import { formatMoney } from '@/lib/money';
 import { discountPercent } from '@/lib/offer';
 import { cheapestOf, effectiveDays, effectiveTotal, fastestOf } from '@/lib/scoring';
 import { AlertIcon, ExternalIcon, TicketIcon } from './icons';
-import { Badge, Money, Stars, Sticker, StoreLogo, WasPrice } from './ui';
+import { Badge, Money, Segmented, Stars, Sticker, StoreLogo, WasPrice } from './ui';
 
 type SortBy = 'total' | 'arrival';
 
@@ -18,7 +18,7 @@ function taxCell(o: Offer): string {
       return 'None';
     case 'estimated':
     case 'exact':
-      return o.tax.amount != null ? formatMoney(o.tax.amount, o.currency) : '—';
+      return o.tax.amount != null ? formatMoney(o.tax.amount, o.currency) : 'Not listed';
     default:
       return 'Not included';
   }
@@ -26,8 +26,13 @@ function taxCell(o: Offer): string {
 
 function StoreBadges({ o }: { o: Offer }) {
   const pct = o.discountNote ? null : discountPercent(o.price, o.originalPrice);
+  const extra = o.tags
+    .filter((t) => !/% off$|^Coupon$|^Inflated discount$|^Check this price$|^Unverified seller$|^Different color$/.test(t))
+    .slice(0, 2);
+  const any = o.colorNote || o.priceWarning || o.tags.includes('Unverified seller') || o.isBrandStore || o.isMarketplace || pct != null || o.coupon || extra.length || o.inStock === false;
+  if (!any) return null;
   return (
-    <div className="mt-1.5 flex flex-wrap gap-1.5">
+    <div className="mt-2 flex flex-wrap gap-1.5">
       {o.colorNote && <Badge tone="warn">{o.colorNote}</Badge>}
       {o.priceWarning && <Badge tone="warn">Check this price</Badge>}
       {o.tags.includes('Unverified seller') && <Badge tone="warn">Unverified seller</Badge>}
@@ -39,32 +44,42 @@ function StoreBadges({ o }: { o: Offer }) {
           <TicketIcon size={12} /> Code {o.coupon}
         </Badge>
       )}
-      {o.tags
-        .filter((t) => !/% off$|^Coupon$|^Inflated discount$|^Check this price$|^Unverified seller$|^Different color$/.test(t))
-        .slice(0, 2)
-        .map((t) => (
-          <Badge key={t}>{t}</Badge>
-        ))}
+      {extra.map((t) => (
+        <Badge key={t}>{t}</Badge>
+      ))}
       {o.inStock === false && <Badge tone="warn">Out of stock</Badge>}
     </div>
   );
 }
 
-function GoButton({ o, compact = false }: { o: Offer; compact?: boolean }) {
+function Warning({ o }: { o: Offer }) {
+  const text = o.priceWarning ?? o.discountNote;
+  if (!text) return null;
+  return (
+    <p className="mt-2 flex max-w-sm gap-1.5 text-footnote text-warning">
+      <AlertIcon size={14} className="mt-0.5 shrink-0" />
+      <span className="min-w-0">{text}</span>
+    </p>
+  );
+}
+
+function GoButton({ o }: { o: Offer }) {
   if (!o.link) return null;
   return (
     <a
       href={o.link}
       target="_blank"
       rel="noopener noreferrer nofollow"
-      className={`inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink font-semibold text-paper hover:bg-ink-soft ${
-        compact ? 'h-9 px-3.5 text-[13px]' : 'h-9 px-4 text-[13px]'
-      }`}
+      className="press relative inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-4 text-subhead font-semibold text-paper hover:bg-ink/85 after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
       aria-label={o.linkIsSearch ? `Search Google for this item at ${o.store} (opens in a new tab)` : `Go to ${o.store} (opens in a new tab)`}
     >
-      {o.linkIsSearch ? 'Find it' : 'Go to store'} <ExternalIcon size={14} />
+      {o.linkIsSearch ? 'Find it' : 'Go to store'} <ExternalIcon size={13} strokeWidth={2.2} />
     </a>
   );
+}
+
+function shippingCell(o: Offer, fallback: string): string {
+  return o.shipping.free ? 'Free' : o.shipping.cost != null ? formatMoney(o.shipping.cost, o.currency) : fallback;
 }
 
 export function OfferTable({ offers }: { offers: Offer[] }) {
@@ -81,98 +96,92 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
     [offers, sortBy],
   );
   const usTax = offers.some((o) => o.tax.mode === 'estimated' || o.tax.mode === 'exact' || o.tax.mode === 'unknown' || o.tax.mode === 'none');
-
-  const sortButton = (key: SortBy, label: string) => (
-    <button
-      type="button"
-      onClick={() => setSortBy(key)}
-      aria-pressed={sortBy === key}
-      className={`rounded-full px-3 py-1 text-[13px] font-semibold ${sortBy === key ? 'bg-ink text-paper' : 'text-ink-soft ring-1 ring-line-strong hover:bg-canvas'}`}
-    >
-      {label}
-    </button>
-  );
+  const th = 'px-3 py-3 text-footnote font-semibold text-muted';
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[13px] text-muted">Sort by</span>
-        {sortButton('total', 'Lowest total')}
-        {sortButton('arrival', 'Soonest arrival')}
-      </div>
+      <Segmented
+        label="Sort stores by"
+        size="sm"
+        className="w-full max-w-[20rem]"
+        value={sortBy}
+        onChange={setSortBy}
+        options={[
+          { value: 'total', label: 'Lowest total' },
+          { value: 'arrival', label: 'Soonest arrival' },
+        ]}
+      />
 
       {/* Wide screens: a real table so columns line up for comparison. */}
-      <div className="mt-4 hidden overflow-x-auto md:block">
-        <table className="w-full border-separate border-spacing-0 text-left text-[14px]">
-          <caption className="sr-only">Prices, shipping, tax, totals and delivery dates by store</caption>
-          <thead>
-            <tr className="text-[12px] text-muted">
-              <th scope="col" className="border-b border-line py-2 pr-4 font-semibold">Store</th>
-              <th scope="col" className="border-b border-line px-3 py-2 text-right font-semibold">Item</th>
-              <th scope="col" className="border-b border-line px-3 py-2 font-semibold">Shipping</th>
-              <th scope="col" className="border-b border-line px-3 py-2 text-right font-semibold">{usTax ? 'Est. tax' : 'Tax'}</th>
-              <th scope="col" className="border-b border-line px-3 py-2 text-right font-semibold">Total</th>
-              <th scope="col" className="border-b border-line px-3 py-2 font-semibold">Arrives</th>
-              <th scope="col" className="border-b border-line px-3 py-2 font-semibold">Returns</th>
-              <th scope="col" className="border-b border-line py-2 pl-3"><span className="sr-only">Link</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((o) => {
-              const isCheapest = cheapest?.id === o.id;
-              return (
-                <tr key={o.id} className={`align-top ${isCheapest ? 'bg-sticker/[0.07]' : ''}`}>
-                  <td className="border-b border-line py-4 pr-4">
-                    <div className="flex items-center gap-2">
-                      <StoreLogo src={o.storeLogo} name={o.store} size={20} />
-                      <span className="font-bold">{o.store}</span>
-                    </div>
-                    <div className="mt-1 flex items-center gap-3">
-                      <Stars rating={o.rating} reviews={o.reviews} />
-                      {o.sellerNote && <span className="text-[12px] text-muted">{o.sellerNote}</span>}
-                    </div>
-                    <StoreBadges o={o} />
-                    {(o.priceWarning ?? o.discountNote) && (
-                      <p className="mt-2 flex max-w-sm gap-1.5 text-[12px] leading-snug text-warning">
-                        <AlertIcon size={14} className="mt-px shrink-0" />
-                        {o.priceWarning ?? o.discountNote}
-                      </p>
-                    )}
-                  </td>
-                  <td className="tnum border-b border-line px-3 py-4 text-right">
-                    <Money amount={o.price} currency={o.currency} />
-                    {o.originalPrice != null && (
-                      <div className="text-[12px]">
-                        <WasPrice amount={o.originalPrice} currency={o.currency} />
+      <div className="mt-4 hidden overflow-hidden rounded-card bg-canvas md:block">
+        <div className="overflow-x-auto">
+          <table className="w-full border-separate border-spacing-0 text-left text-subhead">
+            <caption className="sr-only">Prices, shipping, tax, totals and delivery dates by store</caption>
+            <thead>
+              <tr>
+                <th scope="col" className={`${th} pl-5`}>Store</th>
+                <th scope="col" className={`${th} text-right`}>Item</th>
+                <th scope="col" className={th}>Shipping</th>
+                <th scope="col" className={`${th} text-right`}>{usTax ? 'Est. tax' : 'Tax'}</th>
+                <th scope="col" className={`${th} text-right`}>Total</th>
+                <th scope="col" className={th}>Arrives</th>
+                <th scope="col" className={th}>Returns</th>
+                <th scope="col" className={`${th} pr-5`}><span className="sr-only">Link</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((o) => {
+                const isCheapest = cheapest?.id === o.id;
+                const cell = `hairline-t px-3 py-4 align-top ${isCheapest ? 'bg-sticker/[0.09]' : ''}`;
+                return (
+                  <tr key={o.id}>
+                    <td className={`${cell} min-w-[13rem] max-w-[20rem] pl-5`}>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <StoreLogo src={o.storeLogo} name={o.store} size={20} />
+                        <span className="break-words font-semibold">{o.store}</span>
                       </div>
-                    )}
-                  </td>
-                  <td className="border-b border-line px-3 py-4 text-ink-soft">{o.shipping.free ? 'Free' : o.shipping.cost != null ? formatMoney(o.shipping.cost, o.currency) : o.shipping.label}</td>
-                  <td className="tnum border-b border-line px-3 py-4 text-right text-ink-soft" title={o.tax.note}>
-                    {taxCell(o)}
-                  </td>
-                  <td className="border-b border-line px-3 py-4 text-right">
-                    <Money amount={o.total} currency={o.currency} tabular className="type-cond text-[22px] font-extrabold" />
-                    {isCheapest && (
-                      <div className="mt-1">
-                        <Sticker animate>Lowest total</Sticker>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3">
+                        <Stars rating={o.rating} reviews={o.reviews} />
+                        {o.sellerNote && <span className="text-footnote text-muted">{o.sellerNote}</span>}
                       </div>
-                    )}
-                    {!o.totalIsComplete && <div className="text-[12px] text-muted">+ shipping</div>}
-                  </td>
-                  <td className="border-b border-line px-3 py-4">
-                    <span className={fastest?.id === o.id ? 'font-bold text-ink' : 'text-ink-soft'}>{o.delivery.label}</span>
-                    {fastest?.id === o.id && <div className="text-[12px] text-series">Fastest</div>}
-                  </td>
-                  <td className="border-b border-line px-3 py-4 text-ink-soft">{o.returns?.label ?? 'Not listed'}</td>
-                  <td className="border-b border-line py-4 pl-3 text-right">
-                    <GoButton o={o} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      <StoreBadges o={o} />
+                      <Warning o={o} />
+                    </td>
+                    <td className={`${cell} tnum whitespace-nowrap text-right`}>
+                      <Money amount={o.price} currency={o.currency} />
+                      {o.originalPrice != null && (
+                        <div className="text-footnote">
+                          <WasPrice amount={o.originalPrice} currency={o.currency} />
+                        </div>
+                      )}
+                    </td>
+                    <td className={`${cell} whitespace-nowrap text-ink-soft`}>{shippingCell(o, o.shipping.label)}</td>
+                    <td className={`${cell} tnum whitespace-nowrap text-right text-ink-soft`} title={o.tax.note}>
+                      {taxCell(o)}
+                    </td>
+                    <td className={`${cell} whitespace-nowrap text-right`}>
+                      <Money amount={o.total} currency={o.currency} className="price text-[1.375rem] leading-none" />
+                      {isCheapest && (
+                        <div className="mt-1.5">
+                          <Sticker animate>Lowest total</Sticker>
+                        </div>
+                      )}
+                      {!o.totalIsComplete && <div className="text-footnote text-muted">+ shipping</div>}
+                    </td>
+                    <td className={`${cell} min-w-[9.5rem]`}>
+                      <span className={fastest?.id === o.id ? 'font-semibold text-ink' : 'text-ink-soft'}>{o.delivery.label}</span>
+                      {fastest?.id === o.id && <div className="text-footnote font-semibold text-accent-ink">Fastest</div>}
+                    </td>
+                    <td className={`${cell} min-w-[7rem] text-ink-soft`}>{o.returns?.label ?? 'Not listed'}</td>
+                    <td className={`${cell} pr-5 text-right`}>
+                      <GoButton o={o} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Phones: one card per store with the same facts. */}
@@ -180,41 +189,41 @@ export function OfferTable({ offers }: { offers: Offer[] }) {
         {rows.map((o) => {
           const isCheapest = cheapest?.id === o.id;
           return (
-            <li key={o.id} className={`rounded-2xl p-4 ring-1 ${isCheapest ? 'bg-sticker/[0.07] ring-sticker/70' : 'ring-line'}`}>
+            <li key={o.id} className={`rounded-card p-4 ${isCheapest ? 'bg-sticker/[0.1] ring-1 ring-inset ring-sticker/60' : 'bg-canvas'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
                     <StoreLogo src={o.storeLogo} name={o.store} size={20} />
-                    <span className="truncate font-bold">{o.store}</span>
+                    <span className="truncate text-headline">{o.store}</span>
                   </div>
-                  <Stars rating={o.rating} reviews={o.reviews} />
+                  <div className="mt-0.5">
+                    <Stars rating={o.rating} reviews={o.reviews} />
+                  </div>
                 </div>
-                <div className="text-right">
-                  <Money amount={o.total} currency={o.currency} className="type-cond block text-[24px] font-extrabold leading-none" />
+                <div className="shrink-0 text-right">
+                  <Money amount={o.total} currency={o.currency} className="price block text-[1.5rem] leading-none" />
                   {isCheapest && <Sticker className="mt-1.5">Lowest total</Sticker>}
                 </div>
               </div>
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px]">
+              <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-subhead">
                 <dt className="text-muted">Item</dt>
-                <dd className="text-right">
-                  {o.originalPrice != null && <WasPrice amount={o.originalPrice} currency={o.currency} className="mr-2" />}
+                <dd className="tnum text-right">
+                  {o.originalPrice != null && <WasPrice amount={o.originalPrice} currency={o.currency} className="mr-2 text-footnote" />}
                   {formatMoney(o.price, o.currency)}
                 </dd>
                 <dt className="text-muted">Shipping</dt>
-                <dd className="text-right">{o.shipping.free ? 'Free' : o.shipping.cost != null ? formatMoney(o.shipping.cost, o.currency) : 'Not listed'}</dd>
+                <dd className="tnum text-right">{shippingCell(o, 'Not listed')}</dd>
                 <dt className="text-muted">{usTax ? 'Est. tax' : 'Tax'}</dt>
-                <dd className="text-right">{taxCell(o)}</dd>
+                <dd className="tnum text-right">{taxCell(o)}</dd>
                 <dt className="text-muted">Arrives</dt>
-                <dd className={`text-right ${fastest?.id === o.id ? 'font-bold' : ''}`}>{o.delivery.label.replace(/^Arrives /, '')}</dd>
+                <dd className={`text-right ${fastest?.id === o.id ? 'font-semibold' : ''}`}>{o.delivery.label.replace(/^Arrives /, '')}</dd>
                 <dt className="text-muted">Returns</dt>
                 <dd className="text-right">{o.returns?.label ?? 'Not listed'}</dd>
               </dl>
               <StoreBadges o={o} />
-              {(o.priceWarning ?? o.discountNote) && (
-                <p className="mt-2 text-[12px] leading-snug text-warning">{o.priceWarning ?? o.discountNote}</p>
-              )}
+              <Warning o={o} />
               <div className="mt-3 flex justify-end">
-                <GoButton o={o} compact />
+                <GoButton o={o} />
               </div>
             </li>
           );

@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CountryCode, ResolvedLocation } from '@/lib/types';
 import { COUNTRIES, COUNTRY_CODES, UAE_CITIES, compactPostal, formatPostal, isCountryCode } from '@/lib/countries';
 import { browserTimeZone, getJson, ApiClientError } from '@/lib/client';
 import { Flag } from './flags';
 import { LocateIcon, SpinnerIcon, XIcon } from './icons';
 import { useLocation } from './location-provider';
-import { buttonClass } from './ui';
+import { Sheet } from './sheet';
+import { Segmented, buttonClass } from './ui';
 
 interface ResolveResult {
   valid: boolean;
@@ -37,26 +38,21 @@ interface ReverseGeocode {
 
 export function LocationPicker() {
   const { location, setLocation, pickerOpen, closePicker } = useLocation();
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const [country, setCountry] = useState<CountryCode>('US');
   const [postal, setPostal] = useState('');
   const [city, setCity] = useState('Dubai');
   const [busy, setBusy] = useState<'save' | 'gps' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Each time the sheet opens, start from the saved location.
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (pickerOpen && !dialog.open) {
-      setCountry(location?.country ?? 'US');
-      setPostal(location?.postalCode ? formatPostal(location.country, location.postalCode) : '');
-      setCity(location?.country === 'AE' && location.city ? location.city : 'Dubai');
-      setError(null);
-      dialog.showModal();
-    } else if (!pickerOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [pickerOpen, location]);
+    if (!pickerOpen) return;
+    setCountry(location?.country ?? 'US');
+    setPostal(location?.postalCode ? formatPostal(location.country, location.postalCode) : '');
+    setCity(location?.country === 'AE' && location.city ? location.city : 'Dubai');
+    setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickerOpen]);
 
   const cfg = COUNTRIES[country];
 
@@ -137,85 +133,78 @@ export function LocationPicker() {
   }
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={closePicker}
-      onClick={(e) => {
-        if (e.target === dialogRef.current) closePicker();
-      }}
-      className="m-auto w-[min(440px,calc(100vw-32px))] rounded-2xl bg-paper p-0 text-ink shadow-2xl ring-1 ring-line backdrop:bg-black/70"
-      aria-labelledby="location-title"
-    >
-      <form onSubmit={save} className="p-6">
-        <div className="flex items-start justify-between gap-4">
+    <Sheet open={pickerOpen} onClose={closePicker} labelledBy="location-title">
+      <form onSubmit={save} className="px-5 pb-5 pt-2 sm:px-6 sm:pb-6 sm:pt-6">
+        <div data-sheet-handle className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="location-title" className="type-wide text-[20px] font-extrabold tracking-[-0.02em]">
+            <h2 id="location-title" className="text-title3">
               Where are you shopping from?
             </h2>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-muted">
-              Shipping, tax and delivery dates depend on where the order goes.
-            </p>
+            <p className="mt-1.5 text-subhead text-muted">Shipping, tax and delivery dates depend on where the order goes.</p>
           </div>
-          <button type="button" onClick={closePicker} className={buttonClass('ghost', 'sm')} aria-label="Close">
-            <XIcon />
+          <button
+            type="button"
+            onClick={closePicker}
+            className="press grid h-8 w-8 shrink-0 place-items-center rounded-full bg-fill text-ink-soft hover:bg-fill-strong"
+            aria-label="Close"
+          >
+            <XIcon size={15} strokeWidth={2.4} />
           </button>
         </div>
 
-        <fieldset className="mt-5">
-          <legend className="sr-only">Country</legend>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {COUNTRY_CODES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => pickCountry(c)}
-                aria-pressed={country === c}
-                className={`flex h-11 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold ring-1 transition-colors ${
-                  country === c ? 'bg-ink text-paper ring-ink' : 'bg-paper text-ink ring-line-strong hover:bg-canvas'
-                }`}
-              >
+        <Segmented
+          label="Country"
+          className="mt-5"
+          pad="px-1.5 sm:px-3"
+          value={country}
+          onChange={pickCountry}
+          options={COUNTRY_CODES.map((c) => ({
+            value: c,
+            label: (
+              <>
                 <Flag country={c} />
-                {COUNTRIES[c].short}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+                <span className="truncate">{COUNTRIES[c].short}</span>
+              </>
+            ),
+          }))}
+        />
 
         <div className="mt-5">
           {cfg.postal ? (
             <label className="block">
-              <span className="text-[13px] font-semibold text-ink-soft">{cfg.postal.label}</span>
-              <input
-                value={postal}
-                onChange={(e) =>
-                  setPostal(
-                    cfg.postal?.numeric
-                      ? e.target.value.replace(/[^\d]/g, '').slice(0, cfg.postal.length)
-                      : e.target.value.toUpperCase().replace(/[^A-Z\d ]/g, '').replace(/\s{2,}/g, ' ').slice(0, cfg.postal?.length ?? 8),
-                  )
-                }
-                inputMode={cfg.postal.numeric ? 'numeric' : 'text'}
-                autoCapitalize={cfg.postal.numeric ? undefined : 'characters'}
-                spellCheck={false}
-                autoComplete="postal-code"
-                placeholder={cfg.postal.placeholder}
-                className="mt-1.5 h-12 w-full rounded-xl bg-paper px-4 text-[16px] ring-1 ring-line-strong placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-focus"
-              />
+              <span className="text-footnote font-semibold text-ink-soft">{cfg.postal.label}</span>
+              <span className="field mt-1.5 h-12">
+                <input
+                  value={postal}
+                  onChange={(e) =>
+                    setPostal(
+                      cfg.postal?.numeric
+                        ? e.target.value.replace(/[^\d]/g, '').slice(0, cfg.postal.length)
+                        : e.target.value.toUpperCase().replace(/[^A-Z\d ]/g, '').replace(/\s{2,}/g, ' ').slice(0, cfg.postal?.length ?? 8),
+                    )
+                  }
+                  inputMode={cfg.postal.numeric ? 'numeric' : 'text'}
+                  autoCapitalize={cfg.postal.numeric ? undefined : 'characters'}
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="done"
+                  autoComplete="postal-code"
+                  placeholder={cfg.postal.placeholder}
+                />
+              </span>
             </label>
           ) : (
             <label className="block">
-              <span className="text-[13px] font-semibold text-ink-soft">City</span>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="mt-1.5 h-12 w-full rounded-xl bg-paper px-3 text-[16px] ring-1 ring-line-strong focus:outline-none focus:ring-2 focus:ring-focus"
-              >
-                {UAE_CITIES.map((c) => (
-                  <option key={c.city} value={c.city}>
-                    {c.city}
-                  </option>
-                ))}
-              </select>
+              <span className="text-footnote font-semibold text-ink-soft">City</span>
+              <span className="field mt-1.5 h-12 pr-2">
+                <select value={city} onChange={(e) => setCity(e.target.value)} className="cursor-pointer">
+                  {UAE_CITIES.map((c) => (
+                    <option key={c.city} value={c.city}>
+                      {c.city}
+                    </option>
+                  ))}
+                </select>
+              </span>
             </label>
           )}
         </div>
@@ -224,28 +213,28 @@ export function LocationPicker() {
           type="button"
           onClick={locateMe}
           disabled={busy !== null}
-          className="mt-3 inline-flex items-center gap-2 rounded-lg text-[14px] font-semibold text-series hover:underline disabled:opacity-60"
+          className="press mt-3 inline-flex items-center gap-2 rounded-full py-2 pr-2 text-subhead font-semibold text-accent-ink hover:underline disabled:opacity-60"
         >
           {busy === 'gps' ? <SpinnerIcon size={16} /> : <LocateIcon size={16} />}
           Use my current location
         </button>
 
         {error && (
-          <p className="mt-4 text-[14px] leading-relaxed text-critical" role="alert">
+          <p className="mt-3 text-subhead text-critical" role="alert">
             {error}
           </p>
         )}
 
-        <div className="mt-6 flex items-center justify-end gap-2">
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
           <button type="button" onClick={closePicker} className={buttonClass('secondary')}>
             Cancel
           </button>
-          <button type="submit" disabled={busy !== null} className={buttonClass('primary')}>
+          <button type="submit" disabled={busy !== null} aria-busy={busy === 'save'} className={buttonClass('primary')}>
             {busy === 'save' && <SpinnerIcon size={16} />}
             Save location
           </button>
         </div>
       </form>
-    </dialog>
+    </Sheet>
   );
 }

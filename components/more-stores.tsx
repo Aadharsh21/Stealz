@@ -9,10 +9,10 @@ export function MoreStores({ country, query, id = 'more-stores' }: { country: Co
   const sites = STORE_SITES[country];
   return (
     <section aria-labelledby={`${id}-heading`}>
-      <h2 id={`${id}-heading`} className="text-[16px] font-bold">
+      <h2 id={`${id}-heading`} className="text-headline">
         Search more stores
       </h2>
-      <p className="mt-1 max-w-[60ch] text-[14px] text-muted">
+      <p className="mt-1 max-w-[60ch] break-words text-subhead text-muted">
         Not every store lists everything on Google Shopping. Each of these opens &ldquo;{query}&rdquo; on the store&apos;s own site.
       </p>
       <ul className="mt-4 flex flex-wrap gap-2">
@@ -23,10 +23,10 @@ export function MoreStores({ country, query, id = 'more-stores' }: { country: Co
               target="_blank"
               rel="noopener noreferrer nofollow"
               title={s.viaGoogle ? `${s.blurb}. Opens a Google search of ${s.name}` : s.blurb}
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[14px] font-semibold ring-1 ring-line-strong transition-colors hover:bg-canvas"
+              className="press relative inline-flex h-9 items-center gap-1.5 rounded-full bg-fill px-4 text-subhead font-semibold hover:bg-fill-strong after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
             >
               {s.name}
-              <ExternalIcon size={14} className="text-muted" />
+              <ExternalIcon size={13} strokeWidth={2.2} className="text-muted" />
             </a>
           </li>
         ))}

@@ -13,6 +13,7 @@ import { takeLiveCredit } from './limits';
 import { locationKey, resolveLocation } from './location';
 import { buildListings, flagSuspiciousListings, isUsedItem, itemToOffer, offerContext } from './normalize';
 import { demoHistory, demoProduct } from './providers/demo';
+import { applyProductVariant, demoVariant } from './providers/demo-variants';
 import { searchEbay } from './providers/ebay';
 import { googleProduct } from './providers/serpapi';
 import { ProviderError } from './providers/types';
@@ -93,8 +94,8 @@ async function fetchLiveProduct(ref: ProductRef, loc: ResolvedLocation, ip: stri
 
 async function getProductItems(ref: ProductRef, loc: ResolvedLocation, ip: string, fresh = false): Promise<RawProduct> {
   if (ref.p === 'demo' || dataMode() === 'demo') {
-    const r = demoProduct(ref, loc);
-    if (!r) throw new AppError('This sample product could not be found.', 404, 'not_found');
+    const r = applyProductVariant(demoProduct(ref, loc), await demoVariant(), ref, loc.country);
+    if (!r || r.items.length === 0) throw new AppError('This sample product could not be found.', 404, 'not_found');
     return { ...r, demo: true, fetchedAt: new Date().toISOString(), cached: false };
   }
   const key = productCacheKey(ref, loc);

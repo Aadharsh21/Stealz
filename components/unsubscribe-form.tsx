@@ -24,11 +24,11 @@ export function UnsubscribeForm({ token }: { token: string }) {
   if (state === 'done') {
     return (
       <>
-        <h1 className="type-wide text-[30px] font-extrabold tracking-[-0.03em]">Alerts stopped</h1>
-        <p className="mt-3 text-[16px] leading-relaxed text-ink-soft">
+        <h1 className="text-title1">Alerts stopped</h1>
+        <p className="mt-4 text-intro text-ink-soft">
           You won&apos;t get more emails{title ? ` about ${title}` : ''}. You can set a new alert from any product page.
         </p>
-        <Link href="/" className={`${buttonClass('primary', 'lg')} mt-8`}>
+        <Link href="/" className={`${buttonClass('primary', 'lg')} mt-9`}>
           Go to Stealz
         </Link>
       </>
@@ -37,16 +37,16 @@ export function UnsubscribeForm({ token }: { token: string }) {
 
   return (
     <>
-      <h1 className="type-wide text-[30px] font-extrabold tracking-[-0.03em]">Stop price alerts?</h1>
-      <p className="mt-3 text-[16px] leading-relaxed text-ink-soft">
+      <h1 className="text-title1">Stop price alerts?</h1>
+      <p className="mt-4 text-intro text-ink-soft">
         We&apos;ll stop emailing you about this item. Other alerts you&apos;ve set keep working.
       </p>
       {state === 'failed' && (
-        <p className="mt-4 text-[14px] text-critical" role="alert">
+        <p className="mt-4 text-subhead text-critical" role="alert">
           That link is invalid or alerts were already stopped.
         </p>
       )}
-      <button type="button" onClick={stop} disabled={!token || state === 'working'} className={`${buttonClass('primary', 'lg')} mt-8`}>
+      <button type="button" onClick={stop} disabled={!token || state === 'working'} className={`${buttonClass('primary', 'lg')} mt-9`}>
         {state === 'working' && <SpinnerIcon size={16} />}
         Stop alerts
       </button>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { Listing, SearchSummary } from '@/lib/types';
 import { productHref } from '@/lib/ref';
-import { ShieldIcon, TruckIcon } from './icons';
+import { ShieldIcon, TagIcon, TruckIcon } from './icons';
 import { Money, StoreLogo } from './ui';
 
 function Cell({
@@ -20,18 +20,18 @@ function Cell({
   return (
     <Link
       href={productHref(listing.ref)}
-      className={`group flex flex-col rounded-2xl p-4 ring-1 transition-colors ${
-        highlight ? 'bg-sticker/[0.07] ring-sticker/70 hover:bg-sticker/[0.12]' : 'bg-paper ring-line hover:bg-canvas'
+      className={`press-soft flex min-w-0 flex-col rounded-card p-5 ${
+        highlight ? 'bg-sticker/[0.1] ring-1 ring-inset ring-sticker/60 hover:bg-sticker/[0.14]' : 'bg-canvas hover:bg-smoke/70'
       }`}
     >
-      <div className="flex items-center justify-between gap-2">{heading}</div>
-      <div className="mt-3 flex items-center gap-2">
+      <div className={`flex items-center gap-1.5 text-footnote font-semibold ${highlight ? 'text-accent-ink' : 'text-ink-soft'}`}>{heading}</div>
+      <div className="mt-3 flex min-w-0 items-center gap-2">
         <StoreLogo src={listing.storeLogo} name={listing.store} size={20} />
-        <span className="truncate text-[14px] font-bold">{listing.store}</span>
+        <span className="truncate text-subhead font-semibold">{listing.store}</span>
       </div>
-      <Money amount={listing.total} currency={listing.currency} className="type-cond mt-1 text-[30px] font-extrabold leading-tight" />
-      <p className="line-clamp-1 text-[13px] text-muted">{listing.title}</p>
-      <p className="mt-2 text-[13px] leading-snug text-ink-soft">{detail}</p>
+      <Money amount={listing.total} currency={listing.currency} className="price mt-1.5 text-[2rem] leading-none" />
+      <p className="mt-1.5 line-clamp-1 text-footnote text-muted">{listing.title}</p>
+      <p className="mt-2 text-footnote text-ink-soft">{detail}</p>
     </Link>
   );
 }
@@ -48,7 +48,11 @@ export function VerdictStrip({ summary }: { summary: SearchSummary }) {
       <Cell
         listing={cheapest}
         highlight
-        heading={<span className="text-[13px] font-semibold text-ink-soft">Lowest total</span>}
+        heading={
+          <>
+            <TagIcon size={15} strokeWidth={2} /> Lowest total
+          </>
+        }
         detail={
           <>
             {cheapest.delivery.label}
@@ -60,9 +64,9 @@ export function VerdictStrip({ summary }: { summary: SearchSummary }) {
         <Cell
           listing={fastest}
           heading={
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-soft">
-              <TruckIcon size={16} /> Fastest delivery
-            </span>
+            <>
+              <TruckIcon size={15} strokeWidth={2} /> Fastest delivery
+            </>
           }
           detail={fastest.delivery.label}
         />
@@ -71,9 +75,9 @@ export function VerdictStrip({ summary }: { summary: SearchSummary }) {
         <Cell
           listing={bestValue}
           heading={
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-soft">
-              <ShieldIcon size={16} /> Best overall
-            </span>
+            <>
+              <ShieldIcon size={15} strokeWidth={2} /> Best overall
+            </>
           }
           detail={summary.bestValueReason}
         />

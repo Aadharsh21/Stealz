@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CurrencyCode, HistoryResponse } from '@/lib/types';
 import { dayFromIso, formatDay } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
@@ -23,6 +23,7 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(640);
   const [hover, setHover] = useState<number | null>(null);
+  const gradientId = `history-fill-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -93,10 +94,10 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
           { label: 'Average', value: history.average, sub: `${points.length} days` },
           { label: 'Highest', value: history.highest?.total, sub: history.highest ? formatDay(history.highest.date, locale, false) : '' },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl bg-canvas px-3 py-2.5">
-            <dt className="text-[12px] text-muted">{s.label}</dt>
-            <dd className="text-[17px] font-bold">{s.value != null ? money(s.value) : '—'}</dd>
-            <dd className="text-[12px] text-muted">{s.sub}</dd>
+          <div key={s.label} className="min-w-0 rounded-tile bg-canvas px-3.5 py-3 sm:px-4">
+            <dt className="text-footnote text-muted">{s.label}</dt>
+            <dd className="price mt-0.5 truncate text-[1.1875rem]">{s.value != null ? money(s.value) : 'None yet'}</dd>
+            <dd className="truncate text-caption text-muted">{s.sub}</dd>
           </div>
         ))}
       </dl>
@@ -123,18 +124,24 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
           {geo.ticks.map((t) => (
             <g key={t}>
               <line x1={PAD.left} x2={width - PAD.right} y1={geo.y(t)} y2={geo.y(t)} stroke="var(--line)" strokeWidth={1} />
-              <text x={PAD.left - 8} y={geo.y(t)} dy="0.32em" textAnchor="end" className="tnum fill-[var(--muted)] text-[11px]">
+              <text x={PAD.left - 8} y={geo.y(t)} dy="0.32em" textAnchor="end" className="tnum fill-[var(--muted)] text-caption">
                 {formatMoney(t, currency, { compact: true })}
               </text>
             </g>
           ))}
           {[0, Math.floor(last / 2), last].map((i) => (
-            <text key={i} x={geo.xy[i][0]} y={HEIGHT - 8} textAnchor={i === 0 ? 'start' : i === last ? 'end' : 'middle'} className="fill-[var(--muted)] text-[11px]">
+            <text key={i} x={geo.xy[i][0]} y={HEIGHT - 8} textAnchor={i === 0 ? 'start' : i === last ? 'end' : 'middle'} className="fill-[var(--muted)] text-caption">
               {i === last ? 'Today' : formatDay(points[i].date, locale, false)}
             </text>
           ))}
-          <path d={geo.area} fill="var(--series-wash)" />
-          <path d={geo.line} fill="none" stroke="var(--series)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--series)" stopOpacity={0.28} />
+              <stop offset="100%" stopColor="var(--series)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <path d={geo.area} fill={`url(#${gradientId})`} />
+          <path d={geo.line} fill="none" stroke="var(--series)" strokeWidth={2.25} strokeLinejoin="round" strokeLinecap="round" />
 
           {lowIndex !== last && (
             <g>
@@ -144,10 +151,10 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
                 y={geo.xy[lowIndex][1] + 18}
                 textAnchor={labelAnchor(geo.xy[lowIndex][0])}
                 stroke="var(--paper)"
-                strokeWidth={4}
+                strokeWidth={5}
                 strokeLinejoin="round"
                 paintOrder="stroke"
-                className="fill-[var(--ink-soft)] text-[11px] font-semibold"
+                className="fill-[var(--ink-soft)] text-caption font-semibold"
               >
                 Lowest {money(points[lowIndex].low)}
               </text>
@@ -162,7 +169,7 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
             strokeWidth={4}
             strokeLinejoin="round"
             paintOrder="stroke"
-            className="fill-[var(--ink)] text-[12px] font-bold"
+            className="tnum fill-[var(--ink)] text-footnote font-semibold"
           >
             Today {money(points[last].low)}
           </text>
@@ -177,13 +184,13 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
 
         {active != null && (
           <div
-            className="pointer-events-none absolute top-0 z-10 rounded-lg bg-paper px-3 py-2 text-[12px] shadow-lg ring-1 ring-line"
+            className="material-thick pointer-events-none absolute top-0 z-10 rounded-xl px-3 py-2 text-footnote shadow-float"
             style={{
               left: Math.min(Math.max(geo.xy[active][0] - 70, 0), width - 150),
             }}
             role="status"
           >
-            <div className="text-[15px] font-bold">{money(points[active].low)}</div>
+            <div className="price text-[1.0625rem]">{money(points[active].low)}</div>
             <div className="text-muted">
               {formatDay(points[active].date, locale)}
               {points[active].store ? `, ${points[active].store}` : ''}
@@ -192,9 +199,9 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
         )}
       </div>
 
-      <details className="mt-3 text-[13px]">
-        <summary className="cursor-pointer font-semibold text-ink-soft">Show as a table</summary>
-        <div className="mt-2 max-h-64 overflow-y-auto rounded-lg ring-1 ring-line">
+      <details className="mt-3 text-footnote">
+        <summary className="press inline-flex cursor-pointer rounded-full py-2 font-semibold text-accent-ink">Show as a table</summary>
+        <div className="mt-2 max-h-64 overflow-y-auto overscroll-contain rounded-tile bg-canvas">
           <table className="w-full text-left">
             <thead className="sticky top-0 bg-canvas text-muted">
               <tr>
@@ -205,10 +212,10 @@ export function PriceHistory({ history, currency, locale }: { history: HistoryRe
             </thead>
             <tbody>
               {[...points].reverse().map((p) => (
-                <tr key={p.date} className="border-t border-line">
+                <tr key={p.date} className="hairline-t">
                   <td className="px-3 py-1.5">{formatDay(p.date, locale)}</td>
                   <td className="tnum px-3 py-1.5 text-right">{money(p.low)}</td>
-                  <td className="px-3 py-1.5 text-muted">{p.store ?? '—'}</td>
+                  <td className="px-3 py-1.5 text-muted">{p.store ?? 'Not listed'}</td>
                 </tr>
               ))}
             </tbody>

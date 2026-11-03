@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { ProductResponse } from '@/lib/types';
@@ -13,7 +13,7 @@ import { isWatched, toggleWatch, updateWatchPrice } from '@/lib/storage';
 import { BestPick } from './best-pick';
 import { DealScoreCard } from './deal-score';
 import { DeliveryTimeline } from './delivery-timeline';
-import { AlertIcon, BookmarkIcon, CheckIcon, ChevronLeftIcon, InfoIcon, ShareIcon, TruckIcon } from './icons';
+import { AlertIcon, BellIcon, BookmarkIcon, CheckIcon, ChevronLeftIcon, InfoIcon, ShareIcon, TruckIcon } from './icons';
 import { useLocation } from './location-provider';
 import { MoreStores } from './more-stores';
 import { storeQuery } from '@/lib/store-links';
@@ -23,29 +23,63 @@ import { ProductImage } from './product-card';
 import { TrackPrice } from './track-price';
 import { Money, Notice, Skeleton, Stars, buttonClass } from './ui';
 
+/** Three equal buttons on a phone, natural widths on wider screens. */
+const actionClass = buttonClass('secondary').replace('px-5', 'px-3 sm:px-5');
+
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string; code: string }
   | { status: 'ready'; data: ProductResponse };
 
+/** Swipe through photos on a phone (native scroll snapping), or pick one from the thumbnails. */
 function Gallery({ images, title }: { images: string[]; title: string }) {
-  const [index, setIndex] = useState(0);
   const list = images.length ? images : [''];
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+
+  const onScroll = () => {
+    const el = track.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+    if (i !== index) setIndex(Math.min(list.length - 1, Math.max(0, i)));
+  };
+  const show = (i: number) => {
+    const el = track.current;
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollTo({ left: i * el.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+    setIndex(i);
+  };
+
   return (
-    <div>
-      <ProductImage src={list[index] || undefined} alt={title} className="aspect-square" />
+    <div className="min-w-0">
+      <div
+        ref={track}
+        onScroll={onScroll}
+        className="shelf flex snap-x snap-mandatory overflow-x-auto rounded-tile scrollbar-none"
+        aria-label={`${title}, photo ${index + 1} of ${list.length}`}
+        role="group"
+      >
+        {list.map((src, i) => (
+          <div key={src + i} className="w-full shrink-0 snap-center">
+            <ProductImage src={src || undefined} alt={i === 0 ? title : ''} radius="" className="aspect-square" />
+          </div>
+        ))}
+      </div>
       {list.length > 1 && (
-        <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto p-1 scrollbar-none">
+        <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto p-1 scrollbar-none">
           {list.map((src, i) => (
             <button
               key={src + i}
               type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`Show image ${i + 1}`}
+              onClick={() => show(i)}
+              aria-label={`Show photo ${i + 1}`}
               aria-pressed={i === index}
-              className={`shrink-0 rounded-xl ring-2 ${i === index ? 'ring-ink' : 'ring-transparent hover:ring-line-strong'}`}
+              className={`press shrink-0 rounded-[0.875rem] ring-2 ring-offset-2 ring-offset-paper transition-[box-shadow,opacity] ${
+                i === index ? 'ring-ink' : 'opacity-70 ring-transparent hover:opacity-100'
+              }`}
             >
-              <ProductImage src={src} alt="" className="h-16 w-16" />
+              <ProductImage src={src} alt="" radius="rounded-xl" className="h-16 w-16" />
             </button>
           ))}
         </div>
@@ -71,9 +105,9 @@ function ShareButton({ title }: { title: string }) {
     }
   }
   return (
-    <button type="button" onClick={share} className={buttonClass('secondary')}>
-      {copied ? <CheckIcon size={16} /> : <ShareIcon size={16} />}
-      {copied ? 'Link copied' : 'Share'}
+    <button type="button" onClick={share} className={actionClass}>
+      {copied ? <CheckIcon size={16} strokeWidth={2.4} /> : <ShareIcon size={16} />}
+      {copied ? 'Copied' : 'Share'}
     </button>
   );
 }
@@ -81,12 +115,12 @@ function ShareButton({ title }: { title: string }) {
 function ProductSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]" aria-busy="true">
-      <Skeleton className="aspect-square rounded-xl" />
+      <Skeleton className="aspect-square rounded-tile" />
       <div>
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-3 h-9 w-4/5" />
         <Skeleton className="mt-3 h-5 w-2/3" />
-        <Skeleton className="mt-8 h-56 rounded-2xl" />
+        <Skeleton className="mt-8 h-64 rounded-card" />
       </div>
       <p className="sr-only" role="status">
         Comparing stores…
@@ -150,8 +184,8 @@ export function ProductView() {
   if (!encodedRef) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h1 className="type-wide text-[26px] font-extrabold">This product link is missing</h1>
-        <p className="mt-2 text-ink-soft">Search for the item again to compare prices.</p>
+        <h1 className="text-title2">This product link is missing</h1>
+        <p className="mt-2 text-callout text-ink-soft">Search for the item again to compare prices.</p>
       </div>
     );
   }
@@ -160,10 +194,14 @@ export function ProductView() {
   const prices = (sameColor.length ? sameColor : data?.offers ?? []).map((o) => o.total);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 pb-10 pt-4 sm:px-6 sm:pt-6">
       {data?.ref.q && (
-        <Link href={`/search?q=${encodeURIComponent(data.ref.q)}`} className="inline-flex items-center gap-1 rounded-lg text-[14px] font-semibold text-ink-soft hover:text-ink">
-          <ChevronLeftIcon size={16} /> Results for &ldquo;{data.ref.q}&rdquo;
+        <Link
+          href={`/search?q=${encodeURIComponent(data.ref.q)}`}
+          className="press -ml-1.5 inline-flex max-w-full items-center gap-0.5 rounded-full py-1.5 pl-0.5 pr-2.5 text-subhead font-medium text-accent-ink hover:bg-fill"
+        >
+          <ChevronLeftIcon size={18} strokeWidth={2.4} className="shrink-0" />
+          <span className="truncate">Results for &ldquo;{data.ref.q}&rdquo;</span>
         </Link>
       )}
 
@@ -183,14 +221,12 @@ export function ProductView() {
 
       {data && best && (
         <>
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12">
             <Gallery images={data.product.images} title={data.product.title} />
-            <div>
-              {data.product.brand && <p className="text-[14px] font-semibold text-muted">{data.product.brand}</p>}
-              <h1 className="type-wide mt-1 text-[26px] font-extrabold leading-[1.08] tracking-[-0.03em] sm:text-[32px]">
-                {data.product.title}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-ink-soft">
+            <div className="min-w-0">
+              {data.product.brand && <p className="text-subhead font-semibold text-muted">{data.product.brand}</p>}
+              <h1 className={`mt-1 break-words ${data.product.title.length > 70 ? 'text-title3 sm:text-[1.625rem] sm:leading-[1.15]' : 'text-title2'}`}>{data.product.title}</h1>
+              <div className="tnum mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-subhead text-ink-soft">
                 <Stars rating={data.product.rating} reviews={data.product.reviews} />
                 <span>
                   {data.offers.length} {data.offers.length === 1 ? 'store' : 'stores'},{' '}
@@ -199,9 +235,9 @@ export function ProductView() {
                     : formatMoney(best.total, data.currency)}
                 </span>
               </div>
-              <p className="mt-1 flex items-center gap-1.5 text-[14px] text-muted">
-                <TruckIcon size={16} /> Delivered to{' '}
-                <button type="button" onClick={openPicker} className="font-semibold text-ink underline underline-offset-2">
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-subhead text-muted">
+                <TruckIcon size={16} className="shrink-0" /> Delivered to
+                <button type="button" onClick={openPicker} className="font-semibold text-ink underline decoration-line-strong decoration-1 underline-offset-[0.2em] [overflow-wrap:anywhere] hover:decoration-current">
                   {data.location.label}
                 </button>
               </p>
@@ -223,24 +259,26 @@ export function ProductView() {
                 <BestPick offers={data.offers} />
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={saveToWatchlist} className={buttonClass('secondary')} aria-pressed={watched}>
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+                <button type="button" onClick={saveToWatchlist} className={actionClass} aria-pressed={watched}>
                   <BookmarkIcon size={16} filled={watched} />
                   {watched ? 'Saved' : 'Save'}
                 </button>
-                <a href="#alert" className={buttonClass('secondary')}>
-                  Set a price alert
+                <a href="#alert" className={actionClass}>
+                  <BellIcon size={16} />
+                  <span className="sm:hidden">Alert</span>
+                  <span className="hidden sm:inline">Set a price alert</span>
                 </a>
                 <ShareButton title={data.product.title} />
               </div>
             </div>
           </div>
 
-          <section className="mt-14" aria-labelledby="stores-heading">
-            <h2 id="stores-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+          <section className="mt-16" aria-labelledby="stores-heading">
+            <h2 id="stores-heading" className="text-title3">
               Compare {data.offers.length} {data.offers.length === 1 ? 'store' : 'stores'}
             </h2>
-            <p className="mt-1 text-[14px] text-muted">
+            <p className="mt-1 text-subhead text-muted">
               {data.location.country === 'US'
                 ? 'Totals add shipping and sales tax for your ZIP code.'
                 : `Prices include ${data.location.country === 'IN' ? 'GST' : 'VAT'}; totals add delivery fees.`}{' '}
@@ -256,9 +294,9 @@ export function ProductView() {
             </div>
           </section>
 
-          <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2">
+          <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-6">
             <section aria-labelledby="deal-heading">
-              <h2 id="deal-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+              <h2 id="deal-heading" className="text-title3">
                 Buy now or wait?
               </h2>
               <div className="mt-5">
@@ -266,7 +304,7 @@ export function ProductView() {
               </div>
             </section>
             <section aria-labelledby="delivery-heading">
-              <h2 id="delivery-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+              <h2 id="delivery-heading" className="text-title3">
                 When it arrives
               </h2>
               <div className="mt-5">
@@ -275,11 +313,11 @@ export function ProductView() {
             </section>
           </div>
 
-          <section className="mt-14" aria-labelledby="history-heading">
-            <h2 id="history-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+          <section className="mt-16" aria-labelledby="history-heading">
+            <h2 id="history-heading" className="text-title3">
               Price history
             </h2>
-            <p className="mt-1 text-[14px] text-muted">
+            <p className="mt-1 text-subhead text-muted">
               Lowest total per day across stores
               {data.history?.synthetic ? '. Sample history for this demo item.' : data.history?.since ? `, tracked since ${new Date(data.history.since).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}.` : '.'}
             </p>
@@ -295,8 +333,8 @@ export function ProductView() {
             </div>
           </section>
 
-          <section id="alert" className="mt-14 scroll-mt-24" aria-labelledby="alert-heading">
-            <h2 id="alert-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+          <section id="alert" className="mt-16 scroll-mt-24" aria-labelledby="alert-heading">
+            <h2 id="alert-heading" className="text-title3">
               Get an alert when it drops
             </h2>
             <div className="mt-5 max-w-3xl">
@@ -305,17 +343,17 @@ export function ProductView() {
           </section>
 
           {data.similar.length > 0 && (
-            <section className="mt-14" aria-labelledby="similar-heading">
-              <h2 id="similar-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+            <section className="mt-16" aria-labelledby="similar-heading">
+              <h2 id="similar-heading" className="text-title3">
                 Similar items for less
               </h2>
-              <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 lg:grid-cols-6">
+              <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-6">
                 {data.similar.map((s) => (
-                  <Link key={s.id} href={productHref(s.ref)} className="group block">
-                    <ProductImage src={s.image} alt={s.title} className="aspect-square" />
-                    <p className="mt-2 line-clamp-2 text-[14px] font-semibold leading-snug group-hover:underline">{s.title}</p>
-                    <Money amount={s.total} currency={s.currency} className="type-cond mt-1 block text-[20px] font-extrabold" />
-                    <p className="text-[12px] text-muted">at {s.store}</p>
+                  <Link key={s.id} href={productHref(s.ref)} className="press-soft group block min-w-0">
+                    <ProductImage src={s.image} alt={s.title} className="aspect-square" zoom />
+                    <p className="mt-2.5 line-clamp-2 break-words text-subhead font-semibold">{s.title}</p>
+                    <Money amount={s.total} currency={s.currency} className="price mt-1 block text-[1.25rem] leading-tight" />
+                    <p className="truncate text-footnote text-muted">at {s.store}</p>
                   </Link>
                 ))}
               </div>
@@ -323,17 +361,17 @@ export function ProductView() {
           )}
 
           {(data.product.description || (data.product.features && data.product.features.length > 0)) && (
-            <section className="mt-14 max-w-3xl" aria-labelledby="about-heading">
-              <h2 id="about-heading" className="type-wide text-[22px] font-extrabold tracking-[-0.03em]">
+            <section className="mt-16 max-w-3xl" aria-labelledby="about-heading">
+              <h2 id="about-heading" className="text-title3">
                 About this item
               </h2>
-              {data.product.description && <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{data.product.description}</p>}
+              {data.product.description && <p className="mt-4 break-words text-callout text-ink-soft">{data.product.description}</p>}
               {data.product.features && data.product.features.length > 0 && (
-                <dl className="mt-5 grid grid-cols-[minmax(8rem,auto)_1fr] gap-x-6 gap-y-2 text-[14px]">
+                <dl className="divide-hairline mt-5 overflow-hidden rounded-card bg-canvas text-subhead">
                   {data.product.features.map((f) => (
-                    <div key={f.title} className="contents">
+                    <div key={f.title} className="grid grid-cols-[minmax(7rem,35%)_minmax(0,1fr)] gap-x-4 px-5 py-3">
                       <dt className="text-muted">{f.title}</dt>
-                      <dd>{f.value}</dd>
+                      <dd className="break-words">{f.value}</dd>
                     </div>
                   ))}
                 </dl>

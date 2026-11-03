@@ -11,40 +11,28 @@ import type { PickItem, PickTab, PicksResponse } from '@/lib/pick-tabs';
 import { productHref } from '@/lib/ref';
 import { ChevronLeftIcon, ChevronRightIcon } from './icons';
 import { useLocation } from './location-provider';
-import { ProductImage } from './product-card';
-import { Badge, Skeleton } from './ui';
+import { DiscountTag, ProductImage } from './product-card';
+import { Skeleton, buttonClass, chipClass } from './ui';
 
 function PickCard({ pick, index }: { pick: PickItem; index: number }) {
   const pct = discountPercent(pick.price, pick.originalPrice);
   return (
     <Link
       href={productHref(pick.ref)}
-      className="pick-in group w-[44vw] max-w-[236px] shrink-0 snap-start sm:w-[236px]"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="press-soft rise-in group w-[44vw] max-w-[236px] shrink-0 snap-start sm:w-[236px]"
+      style={{ '--i': index } as React.CSSProperties}
     >
       <div className="relative">
-        <ProductImage
-          src={pick.image}
-          alt={pick.title}
-          className="aspect-[4/5] [&_img]:transition-transform [&_img]:duration-500 group-hover:[&_img]:scale-[1.05]"
-        />
-        {pct != null && (
-          <span className="absolute left-2.5 top-2.5">
-            <Badge tone="sale" className="bg-paper/90 backdrop-blur">
-              {pct}% off
-            </Badge>
-          </span>
-        )}
+        <ProductImage src={pick.image} alt={pick.title} className="aspect-[4/5]" zoom />
+        {pct != null && <DiscountTag className="absolute left-2.5 top-2.5">{pct}% off</DiscountTag>}
       </div>
-      <p className="mt-3 truncate text-[13px] text-muted">{pick.brand ?? '\u00a0'}</p>
-      <h3 className="mt-0.5 line-clamp-2 min-h-[2.6em] text-[15px] font-semibold leading-snug group-hover:underline group-hover:underline-offset-4">
-        {pick.title}
-      </h3>
+      <p className="mt-3 truncate text-footnote text-muted">{pick.brand ?? ' '}</p>
+      <h3 className="mt-0.5 line-clamp-2 min-h-[2.8em] text-subhead font-semibold">{pick.title}</h3>
       <p className="mt-2 flex items-baseline gap-1.5">
-        <span className="text-[12px] text-muted">from</span>
-        <span className="type-cond text-[24px] leading-none">{formatMoney(pick.price, pick.currency)}</span>
+        <span className="text-footnote text-muted">from</span>
+        <span className="price text-[1.25rem] leading-none">{formatMoney(pick.price, pick.currency)}</span>
       </p>
-      <p className="mt-1 truncate text-[13px] text-muted">
+      <p className="mt-1 truncate text-footnote text-muted">
         at {pick.store}
         {pick.storeCount > 1 && ` and ${pick.storeCount - 1} more`}
       </p>
@@ -57,10 +45,10 @@ function PicksSkeleton() {
     <div className="flex gap-4 overflow-hidden" aria-hidden="true">
       {Array.from({ length: 5 }, (_, i) => (
         <div key={i} className="w-[44vw] max-w-[236px] shrink-0 sm:w-[236px]">
-          <Skeleton className="aspect-[4/5] w-full rounded-xl" />
+          <Skeleton className="aspect-[4/5] w-full rounded-tile" />
           <Skeleton className="mt-3 h-3 w-16" />
-          <Skeleton className="mt-2 h-4 w-40" />
-          <Skeleton className="mt-3 h-6 w-24" />
+          <Skeleton className="mt-2 h-4 w-40 max-w-full" />
+          <Skeleton className="mt-3 h-5 w-24" />
         </div>
       ))}
     </div>
@@ -96,39 +84,31 @@ export function HomePicks() {
   };
 
   const items = data && data !== 'error' ? data.items : [];
+  const arrow =
+    'press grid h-9 w-9 place-items-center rounded-full bg-fill text-ink hover:bg-fill-strong disabled:opacity-40';
 
   return (
-    <section aria-labelledby="picks-heading" className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+    <section aria-labelledby="picks-heading" className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 id="picks-heading" className="type-wide text-[34px] leading-tight sm:text-[42px]">
+          <h2 id="picks-heading" className="text-title2">
             Worth a look this week
           </h2>
-          <p className="mt-1 text-[15px] text-muted">
+          <p className="mt-1.5 text-subhead text-muted">
             Real prices from stores in {COUNTRIES[country].inPhrase}. Tap one to compare every store.
           </p>
         </div>
         <div className="hidden gap-2 sm:flex">
-          <button
-            type="button"
-            onClick={() => scroll(-1)}
-            aria-label="Scroll picks left"
-            className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line-strong hover:bg-canvas"
-          >
-            <ChevronLeftIcon size={18} />
+          <button type="button" onClick={() => scroll(-1)} aria-label="Scroll picks left" className={arrow} disabled={items.length === 0}>
+            <ChevronLeftIcon size={18} strokeWidth={2.2} />
           </button>
-          <button
-            type="button"
-            onClick={() => scroll(1)}
-            aria-label="Scroll picks right"
-            className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line-strong hover:bg-canvas"
-          >
-            <ChevronRightIcon size={18} />
+          <button type="button" onClick={() => scroll(1)} aria-label="Scroll picks right" className={arrow} disabled={items.length === 0}>
+            <ChevronRightIcon size={18} strokeWidth={2.2} />
           </button>
         </div>
       </div>
 
-      <div role="tablist" aria-label="Categories" className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:px-0">
+      <div role="tablist" aria-label="Categories" className="shelf -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 py-1 scrollbar-none sm:mx-0 sm:px-0">
         {PICK_TABS.map((t) => {
           const selected = t.id === tab;
           return (
@@ -140,9 +120,7 @@ export function HomePicks() {
               aria-selected={selected}
               aria-controls="picks-panel"
               onClick={() => setTab(t.id)}
-              className={`shrink-0 rounded-full px-4 py-2 text-[14px] font-semibold transition-colors ${
-                selected ? 'bg-ink text-paper' : 'text-ink-soft ring-1 ring-line-strong hover:bg-canvas hover:text-ink'
-              }`}
+              className={chipClass(selected)}
             >
               {t.label}
             </button>
@@ -154,12 +132,9 @@ export function HomePicks() {
         {data === undefined && <PicksSkeleton />}
 
         {(data === 'error' || (data && items.length === 0)) && (
-          <div className="rounded-2xl bg-canvas p-6 ring-1 ring-line">
-            <p className="text-[15px] text-ink-soft">Picks for this category are being refreshed. Search it directly instead:</p>
-            <Link
-              href={`/search?q=${encodeURIComponent(current.query)}`}
-              className="mt-3 inline-flex rounded-full bg-ink px-4 py-2 text-[14px] font-semibold text-paper hover:bg-ink-soft"
-            >
+          <div className="rounded-card bg-canvas p-6">
+            <p className="text-callout text-ink-soft">Picks for this category are being refreshed. Search it directly instead:</p>
+            <Link href={`/search?q=${encodeURIComponent(current.query)}`} className={`${buttonClass('primary', 'sm')} mt-4`}>
               Search {current.label.toLowerCase()}
             </Link>
           </div>
@@ -170,24 +145,26 @@ export function HomePicks() {
             <div
               key={key}
               ref={scroller}
-              className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 scrollbar-none sm:mx-0 sm:scroll-px-0 sm:px-0"
+              className="shelf -mx-4 flex scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 pt-1 scrollbar-none sm:mx-0 sm:scroll-px-0 sm:px-0"
             >
               {items.map((p, i) => (
                 <PickCard key={p.ref} pick={p} index={i} />
               ))}
               <Link
                 href={`/search?q=${encodeURIComponent(current.query)}`}
-                className="pick-in grid w-[44vw] max-w-[236px] shrink-0 snap-start place-items-center rounded-xl text-center ring-1 ring-line hover:bg-canvas sm:w-[236px]"
-                style={{ animationDelay: `${items.length * 50}ms` }}
+                className="press-soft rise-in grid w-[44vw] max-w-[236px] shrink-0 snap-start place-items-center rounded-tile bg-canvas text-center sm:w-[236px]"
+                style={{ '--i': items.length } as React.CSSProperties}
               >
                 <span className="px-6">
-                  <span className="type-wide block text-[24px] leading-tight">See all {current.label.toLowerCase()}</span>
-                  <span className="mt-2 block text-[13px] text-muted">Every store, compared</span>
+                  <span className="block text-title3">See all {current.label.toLowerCase()}</span>
+                  <span className="mt-2 inline-flex items-center gap-0.5 text-footnote font-semibold text-accent-ink">
+                    Every store, compared <ChevronRightIcon size={14} strokeWidth={2.4} />
+                  </span>
                 </span>
               </Link>
             </div>
             {data && data !== 'error' && data.checkedAt && (
-              <p className="mt-3 text-[12px] text-muted">
+              <p className="mt-3 text-footnote text-muted">
                 Prices checked {timeAgo(data.checkedAt)}. Each item shows today&apos;s totals with tax and delivery.
               </p>
             )}

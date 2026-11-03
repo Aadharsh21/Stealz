@@ -6,7 +6,7 @@ import { ApiClientError, browserTimeZone, postJson } from '@/lib/client';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { cheapestOf } from '@/lib/scoring';
 import { BellIcon, CheckIcon, SpinnerIcon } from './icons';
-import { Notice, buttonClass } from './ui';
+import { Notice, Segmented, buttonClass } from './ui';
 
 type Mode = 'any' | 'target';
 
@@ -35,6 +35,7 @@ export function TrackPrice({ data, encodedRef, onSaveToWatchlist, watched }: {
           You can still save this item to your watchlist on this device and check back.
         </Notice>
         <button type="button" onClick={onSaveToWatchlist} className={buttonClass(watched ? 'secondary' : 'primary')}>
+          {watched && <CheckIcon size={16} strokeWidth={2.4} />}
           {watched ? 'Saved to your watchlist' : 'Save to watchlist'}
         </button>
       </div>
@@ -52,6 +53,7 @@ export function TrackPrice({ data, encodedRef, onSaveToWatchlist, watched }: {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (state.status === 'sending') return;
     const targetPrice = mode === 'target' ? Number(target.replace(/[^\d.]/g, '')) : null;
     if (mode === 'target' && (!targetPrice || targetPrice >= current)) {
       setState({ status: 'error', message: `Pick a target below today's ${formatMoney(current, data.currency)}.` });
@@ -76,56 +78,53 @@ export function TrackPrice({ data, encodedRef, onSaveToWatchlist, watched }: {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-2xl p-5 ring-1 ring-line">
-      <fieldset>
-        <legend className="text-[14px] font-semibold">Email me when</legend>
-        <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-[14px]">
-          <label className="flex cursor-pointer items-center gap-2">
-            <input type="radio" name={`${id}-mode`} checked={mode === 'target'} onChange={() => setMode('target')} className="h-4 w-4 accent-[var(--ink)]" />
-            The total drops to
-          </label>
-          <label className="flex cursor-pointer items-center gap-2">
-            <input type="radio" name={`${id}-mode`} checked={mode === 'any'} onChange={() => setMode('any')} className="h-4 w-4 accent-[var(--ink)]" />
-            Any price drop
-          </label>
-        </div>
-      </fieldset>
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[10rem_1fr_auto]">
+    <form onSubmit={submit} className="rounded-card bg-canvas p-5 sm:p-6">
+      <p id={`${id}-mode`} className="text-headline">
+        Email me when
+      </p>
+      <Segmented
+        label="Email me when"
+        className="mt-3 w-full max-w-[22rem]"
+        value={mode}
+        onChange={setMode}
+        options={[
+          { value: 'target', label: 'It hits my price' },
+          { value: 'any', label: 'Any price drop' },
+        ]}
+      />
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[10rem_minmax(0,1fr)_auto]">
         {mode === 'target' && (
-          <label className="flex h-11 items-center rounded-xl px-3 ring-1 ring-line-strong focus-within:ring-2 focus-within:ring-focus">
+          <label className="field">
             <span className="text-muted">{currencySymbol(data.currency)}</span>
-            <input
-              inputMode="decimal"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              aria-label="Target total price"
-              className="w-full bg-transparent px-2 text-[15px] focus:outline-none"
-            />
+            <input inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} aria-label="Target total price" />
           </label>
         )}
-        <label className={`flex h-11 items-center rounded-xl px-3 ring-1 ring-line-strong focus-within:ring-2 focus-within:ring-focus ${mode === 'any' ? 'sm:col-span-2' : ''}`}>
+        <label className={`field ${mode === 'any' ? 'sm:col-span-2' : ''}`}>
           <span className="sr-only">Email address</span>
           <input
             type="email"
             required
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="send"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent text-[15px] placeholder:text-muted focus:outline-none"
           />
         </label>
-        <button type="submit" disabled={state.status === 'sending'} className={`${buttonClass('primary', 'lg')} h-11`}>
+        <button type="submit" disabled={state.status === 'sending'} aria-busy={state.status === 'sending'} className={buttonClass('primary')}>
           {state.status === 'sending' ? <SpinnerIcon size={16} /> : <BellIcon size={16} />}
-          Set alert
+          {state.status === 'sending' ? 'Setting alert…' : 'Set alert'}
         </button>
       </div>
       {state.status === 'error' && (
-        <p className="mt-3 text-[14px] text-critical" role="alert">
+        <p className="mt-3 text-subhead text-critical" role="alert">
           {state.message}
         </p>
       )}
-      <p className="mt-3 text-[13px] text-muted">
+      <p className="mt-3 text-footnote text-muted">
         Today&apos;s lowest total is {formatMoney(current, data.currency)}. We&apos;ll send one email to confirm, and every alert
         has a one-click unsubscribe. No account needed.
       </p>

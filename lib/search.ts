@@ -11,6 +11,7 @@ import { hitCounter, takeLiveCredit } from './limits';
 import { locationKey, resolveLocation } from './location';
 import { buildListings, flagSuspiciousListings, groupListings, storeCounts, summarize } from './normalize';
 import { demoSearch } from './providers/demo';
+import { applySearchVariant, demoVariant } from './providers/demo-variants';
 import { searchEbay } from './providers/ebay';
 import { searchGoogleShopping } from './providers/serpapi';
 import type { ProviderItem } from './providers/types';
@@ -59,7 +60,7 @@ export async function getSearchItems(
   const mode = dataMode();
   if (mode === 'none') throw new AppError('No shopping data source is configured yet.', 500, 'server');
   if (mode === 'demo') {
-    const r = demoSearch(query, loc, opts.now);
+    const r = applySearchVariant(demoSearch(query, loc, opts.now), await demoVariant(), loc.country);
     const items = opts.onSale ? r.items.filter((i) => i.originalPrice != null) : r.items;
     return { items, sources: r.sources, notices: r.notices, demo: true, fetchedAt: new Date().toISOString(), cached: false };
   }

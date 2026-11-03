@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BRAND } from '@/lib/brand';
 import { US_RATES_AS_OF } from '@/lib/tax';
+import { buttonClass } from '@/components/classes';
 
 export const metadata: Metadata = {
   title: 'How it works',
@@ -115,20 +116,18 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-10 pt-10 sm:px-6">
-      <h1 className="type-wide text-[34px] font-extrabold leading-tight tracking-[-0.035em]">How {BRAND.name} works</h1>
-      <p className="mt-3 text-[17px] leading-relaxed text-ink-soft">
-        What we compare, how we work out the numbers, and what we do with your information.
-      </p>
-      <div className="mt-10 space-y-10">
+    <div className="mx-auto max-w-3xl px-4 pb-10 pt-8 sm:px-6 sm:pt-14">
+      <h1 className="text-title1">How {BRAND.name} works</h1>
+      <p className="mt-4 text-intro text-ink-soft">What we compare, how we work out the numbers, and what we do with your information.</p>
+      <div className="mt-12 space-y-10">
         {SECTIONS.map((s) => (
           <section key={s.title}>
-            <h2 className="text-[19px] font-bold">{s.title}</h2>
-            <div className="mt-2 space-y-3 text-[15px] leading-relaxed text-ink-soft">{s.body}</div>
+            <h2 className="text-title3">{s.title}</h2>
+            <div className="mt-2.5 space-y-3 text-body text-ink-soft">{s.body}</div>
           </section>
         ))}
       </div>
-      <Link href="/" className="mt-12 inline-flex rounded-full bg-ink px-5 py-3 font-semibold text-paper hover:bg-ink-soft">
+      <Link href="/" className={`${buttonClass('primary', 'lg')} mt-14`}>
         Search for something
       </Link>
     </div>

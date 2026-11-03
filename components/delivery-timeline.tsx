@@ -11,8 +11,8 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
   const fastest = fastestOf(offers);
   if (known.length === 0) {
     return (
-      <div className="rounded-2xl p-5 ring-1 ring-line">
-        <p className="text-[14px] text-ink-soft">None of the stores listed a delivery date for your location.</p>
+      <div className="h-full rounded-card bg-canvas p-5 sm:p-6">
+        <p className="text-subhead text-ink-soft">None of the stores listed a delivery date for your location.</p>
       </div>
     );
   }
@@ -25,10 +25,10 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
   const pct = (d: number) => (d / span) * 100;
 
   return (
-    <div className="rounded-2xl p-5 ring-1 ring-line">
-      <div className="grid grid-cols-[minmax(4.5rem,7rem)_1fr] gap-x-3 sm:grid-cols-[minmax(6rem,9rem)_1fr]">
+    <div className="h-full rounded-card bg-canvas p-5 sm:p-6">
+      <div className="grid grid-cols-[minmax(4.5rem,7rem)_minmax(0,1fr)] gap-x-3 sm:grid-cols-[minmax(6rem,9rem)_minmax(0,1fr)]">
         <div />
-        <div className="relative h-5 text-[11px] font-semibold text-muted" aria-hidden="true">
+        <div className="relative h-5 text-caption font-semibold text-muted" aria-hidden="true">
           {ticks.map((i) => (
             <span key={i} className="absolute -translate-x-1/2 whitespace-nowrap" style={{ left: `${pct(i + 0.5)}%` }}>
               {i === 0 ? 'Today' : formatDay(isoFromDay(todayDay + i), locale).split(',')[0]}
@@ -42,22 +42,22 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
           const isFastest = fastest?.id === o.id;
           return (
             <div key={o.id} className="contents">
-              <div className="truncate py-2 text-[13px] font-semibold" title={o.store}>
+              <div className="truncate py-2 text-footnote font-semibold" title={o.store}>
                 {o.store}
               </div>
               <div className="relative py-2">
                 <div className="absolute inset-y-0 left-0 right-0 flex" aria-hidden="true">
                   {Array.from({ length: span }, (_, i) => (
-                    <div key={i} className="h-full flex-1 border-l border-line first:border-l-0" />
+                    <div key={i} className="h-full flex-1 border-l-[length:var(--hairline)] border-line first:border-l-0" />
                   ))}
                 </div>
                 <div className="relative flex h-[22px] items-center">
                   <div
-                    className={`absolute h-3.5 rounded-[4px] ${isFastest ? 'bg-series' : 'bg-line-strong'}`}
+                    className={`absolute h-3 rounded-full ${isFastest ? 'bg-sticker' : 'bg-fill-strong'}`}
                     style={{ left: `calc(${pct(min)}% + 2px)`, width: `calc(${pct(max - min + 1)}% - 4px)` }}
                   />
                   <span
-                    className="absolute whitespace-nowrap pl-2 text-[12px] text-ink-soft"
+                    className="absolute whitespace-nowrap pl-2 text-caption text-ink-soft"
                     style={
                       pct(max + 1) > 55
                         ? { right: `calc(${100 - pct(min)}% + 4px)`, paddingLeft: 0, paddingRight: 8 }
@@ -73,7 +73,7 @@ export function DeliveryTimeline({ offers, locale }: { offers: Offer[]; locale: 
         })}
       </div>
       {unknown.length > 0 && (
-        <p className="mt-3 text-[13px] text-muted">
+        <p className="mt-3 text-footnote text-muted">
           No date given by {unknown.map((o) => o.store).join(', ')}.
         </p>
       )}
