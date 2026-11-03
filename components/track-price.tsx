@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import type { ProductResponse } from '@/lib/types';
 import { ApiClientError, browserTimeZone, postJson } from '@/lib/client';
+import { track } from '@/lib/analytics';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { cheapestOf } from '@/lib/scoring';
 import { BellIcon, CheckIcon, SpinnerIcon } from './icons';
@@ -69,6 +70,7 @@ export function TrackPrice({ data, encodedRef, onSaveToWatchlist, watched }: {
         location: data.location,
         tz: browserTimeZone(),
       });
+      track('price_alert_created', { product: data.product.title, mode, target_price: targetPrice, current_low: current, currency: data.currency });
       setState({ status: 'done', message: res.message });
     } catch (err) {
       setState({ status: 'error', message: err instanceof ApiClientError ? err.message : 'Something went wrong. Please try again.' });

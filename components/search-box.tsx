@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { COUNTRIES } from '@/lib/countries';
+import { track } from '@/lib/analytics';
 import { addRecentSearch, clearRecentSearches, loadRecentSearches } from '@/lib/storage';
 import { popularSearches, suggest } from '@/lib/suggestions';
 import { ClockIcon, SearchIcon, XIcon } from './icons';
@@ -51,6 +52,7 @@ export function SearchBox({
     const q = query.trim();
     if (q.length < 2) return;
     addRecentSearch(q);
+    track('search_submitted', { query: q, country });
     setOpen(false);
     inputRef.current?.blur();
     router.push(`/search?q=${encodeURIComponent(q)}`);

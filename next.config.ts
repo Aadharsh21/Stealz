@@ -2,6 +2,15 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PostHog analytics are proxied through our own domain so ad blockers do not drop them.
+  skipTrailingSlashRedirect: true,
+  async rewrites() {
+    return [
+      { source: '/ingest/static/:path*', destination: 'https://us-assets.i.posthog.com/static/:path*' },
+      { source: '/ingest/array/:path*', destination: 'https://us-assets.i.posthog.com/array/:path*' },
+      { source: '/ingest/:path*', destination: 'https://us.i.posthog.com/:path*' },
+    ];
+  },
   // Product images come from many store CDNs, so they're shown as plain <img> tags.
   images: { unoptimized: true },
   async headers() {

@@ -9,6 +9,7 @@ import { COUNTRIES } from '@/lib/countries';
 import { formatMoney } from '@/lib/money';
 import { productHref } from '@/lib/ref';
 import { cheapestOf } from '@/lib/scoring';
+import { track } from '@/lib/analytics';
 import { isWatched, toggleWatch, updateWatchPrice } from '@/lib/storage';
 import { BestPick } from './best-pick';
 import { DealScoreCard } from './deal-score';
@@ -145,6 +146,7 @@ export function ProductView() {
       savedAt: new Date().toISOString(),
     });
     setWatched(now);
+    if (now) track('watchlist_saved', { product: data.product.title });
   }
 
   if (!encodedRef) {

@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import type { Offer } from '@/lib/types';
+import { trackStoreClick } from '@/lib/analytics';
 import { formatMoney } from '@/lib/money';
 import { DEFAULT_SPEED_WEIGHT, cheapestOf, explainPick, fastestOf, rankOffers } from '@/lib/scoring';
 import { ExternalIcon, TruckIcon } from './icons';
@@ -64,6 +65,7 @@ export function BestPick({ offers }: { offers: Offer[] }) {
       {best.link && (
         <a
           href={best.link}
+          onClick={() => trackStoreClick(best, 'best_pick')}
           target="_blank"
           rel="noopener noreferrer nofollow"
           className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ink text-[15px] font-semibold text-paper hover:bg-ink-soft"

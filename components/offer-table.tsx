@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { Offer } from '@/lib/types';
+import { trackStoreClick } from '@/lib/analytics';
 import { formatMoney } from '@/lib/money';
 import { discountPercent } from '@/lib/offer';
 import { cheapestOf, effectiveDays, effectiveTotal, fastestOf } from '@/lib/scoring';
@@ -55,6 +56,7 @@ function GoButton({ o, compact = false }: { o: Offer; compact?: boolean }) {
   return (
     <a
       href={o.link}
+      onClick={() => trackStoreClick(o, 'offer_table')}
       target="_blank"
       rel="noopener noreferrer nofollow"
       className={`inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink font-semibold text-paper hover:bg-ink-soft ${
