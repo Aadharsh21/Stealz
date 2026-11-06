@@ -2,10 +2,12 @@
 
 import type { CurrencyCode } from './types';
 
+// Clothing tabs search the whole department, like a store's "Women > Clothing" page, and a
+// price range per country keeps out $3,000 runway pieces (see shelves.ts).
 export const PICK_TABS = [
-  { id: 'women', label: 'Women', query: "women's designer clothing" },
-  { id: 'men', label: 'Men', query: "men's designer jackets" },
-  { id: 'kids', label: 'Kids', query: 'kids sneakers' },
+  { id: 'women', label: 'Women', query: "women's clothing" },
+  { id: 'men', label: 'Men', query: "men's clothing" },
+  { id: 'kids', label: 'Kids', query: 'kids clothing' },
   { id: 'bags', label: 'Bags', query: "women's designer handbags" },
   { id: 'sneakers', label: 'Sneakers', query: 'best selling sneakers' },
   { id: 'accessories', label: 'Accessories', query: 'designer accessories' },

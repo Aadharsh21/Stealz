@@ -1,5 +1,7 @@
 // Home page picks: a few real, in-stock products per tab, from one live search per tab and
-// country. Picks are reused for two weeks, so they cost a handful of searches a month.
+// country. Picks are reused for two weeks, so they cost a handful of searches a month. Each tab
+// keeps to its shelf (shelves.ts): the right kind of item, for the right people, at a price
+// people actually pay.
 
 import type { CountryCode } from './types';
 import { PICK_TABS } from './pick-tabs';
@@ -9,6 +11,7 @@ import { cacheGet, cacheSet } from './cache';
 import { COUNTRIES } from './countries';
 import { toAppError } from './errors';
 import { runSearch } from './search';
+import { shelfFilter, shelfKey, shelfPrice } from './shelves';
 import { detectBrand, hash32 } from './text';
 
 const FRESH_MS = 14 * 86400 * 1000;
@@ -21,10 +24,14 @@ interface StoredPicks {
 
 export async function getPicks(tab: PickTab, country: CountryCode): Promise<PicksResponse> {
   const def = PICK_TABS.find((t) => t.id === tab) ?? PICK_TABS[0];
-  const key = `picks:v2:${country}:${tab}:${hash32(def.query)}`;
+  const key = `picks:v2:${country}:${tab}:${hash32(shelfKey(def.query, tab, country))}`;
+  const fits = shelfFilter(tab, country);
   const saved = await cacheGet<StoredPicks>(key);
-  // Brand names are re-read so saved picks benefit from newly recognized brands.
-  const stored = saved && { ...saved, items: saved.items.map((p) => ({ ...p, brand: p.brand ?? detectBrand(p.title) })) };
+  // Saved picks are re-checked, so they benefit from newly recognized brands and categories.
+  const stored = saved && {
+    ...saved,
+    items: saved.items.filter((p) => fits(p.title, p.price)).map((p) => ({ ...p, brand: p.brand ?? detectBrand(p.title) })),
+  };
   const fresh = stored && Date.now() - Date.parse(stored.checkedAt) < FRESH_MS;
   if (stored && fresh) return { tab, query: def.query, ...stored };
 
@@ -34,8 +41,13 @@ export async function getPicks(tab: PickTab, country: CountryCode): Promise<Pick
   await cacheSet(lockKey, true, 120);
 
   try {
-    const { response } = await runSearch({ query: def.query, location: { country, source: 'default' }, ip: 'home-picks' });
-    const items = choosePicks(response.groups, COUNTRIES[country].currency);
+    const { response } = await runSearch({
+      query: def.query,
+      location: { country, source: 'default' },
+      ip: 'home-picks',
+      price: shelfPrice(tab, country),
+    });
+    const items = choosePicks(response.groups, COUNTRIES[country].currency, fits);
     if (items.length >= 4 && !response.demo) {
       const next: StoredPicks = { items, checkedAt: response.fetchedAt };
       await cacheSet(key, next, KEEP_SECONDS);

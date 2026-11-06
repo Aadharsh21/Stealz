@@ -1,5 +1,7 @@
 // Shared types used by the API routes and the UI.
 
+import type { CategoryGroup, Department } from './category';
+
 export type CountryCode = 'US' | 'GB' | 'AE' | 'IN';
 export type CurrencyCode = 'USD' | 'GBP' | 'AED' | 'INR';
 export type DataSource = 'google' | 'ebay' | 'demo';
@@ -128,6 +130,11 @@ export interface Listing extends Offer {
   multipleSources?: boolean;
   /** A Google Shopping page for the product, when there's no direct store link. */
   googleLink?: string;
+  /** What the item is, the way a store would file it ("Dresses"), when the title says. */
+  category?: string;
+  categoryGroup?: CategoryGroup;
+  /** Who it's for, when the title says. */
+  department?: Department;
 }
 
 /** Everything needed to reopen a product's comparison page from a URL. */
@@ -188,6 +195,8 @@ export interface SearchResponse {
   hiddenUsed: number;
   /** How many listings were hidden because they look like fakes or come from fake shops. */
   hiddenFakes: number;
+  /** How many listings were hidden because they aren't what was searched for (perfume in a dress search). */
+  hiddenOffTopic?: number;
 }
 
 export interface HistoryPoint {

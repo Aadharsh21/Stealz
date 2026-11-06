@@ -14,9 +14,15 @@ export function saleDiscount(l: Listing): number | null {
 /**
  * Up to `limit` sale items: has a photo, a real markdown of 10% or more (biggest first), at most
  * three per brand, stores before marketplaces. Items Google marks as on sale without saying by
- * how much come after the ones with a known discount.
+ * how much come after the ones with a known discount. `fits` keeps the tab on topic (see
+ * shelves.ts), judged on the title and the sale price.
  */
-export function chooseSaleItems(groups: ProductGroup[], currency: CurrencyCode, limit = 30): SaleItem[] {
+export function chooseSaleItems(
+  groups: ProductGroup[],
+  currency: CurrencyCode,
+  opts: { limit?: number; fits?: (title: string, price: number) => boolean } = {},
+): SaleItem[] {
+  const { limit = 30, fits } = opts;
   const candidates: { item: SaleItem; marketplace: boolean }[] = [];
   for (const g of groups) {
     if (!g.image || !/^https:\/\//.test(g.image)) continue;
@@ -27,6 +33,7 @@ export function chooseSaleItems(groups: ProductGroup[], currency: CurrencyCode, 
     const pool = known.length > 0 ? known : priced.filter((p) => p.pct == null);
     if (pool.length === 0) continue;
     const best = [...pool].sort((a, b) => a.l.price - b.l.price)[0];
+    if (fits && !fits(g.title, best.l.price)) continue;
     candidates.push({
       marketplace: g.listings.every((l) => l.isMarketplace),
       item: {

@@ -33,7 +33,7 @@ const between = (r: () => number, lo: number, hi: number) => lo + (hi - lo) * r(
 
 export type DemoCategory =
   | 'bag' | 'tote' | 'backpack' | 'wallet' | 'sneaker' | 'boot' | 'heel' | 'watch' | 'sunglasses'
-  | 'jeans' | 'tee' | 'shirt' | 'dress' | 'jacket' | 'hoodie' | 'hat' | 'jewelry' | 'other';
+  | 'jeans' | 'tee' | 'shirt' | 'dress' | 'jacket' | 'hoodie' | 'hat' | 'jewelry' | 'apparel' | 'other';
 
 const CATEGORY_WORDS: [DemoCategory, RegExp][] = [
   ['tote', /\btotes?\b/],
@@ -53,6 +53,8 @@ const CATEGORY_WORDS: [DemoCategory, RegExp][] = [
   ['tee', /t-?shirts?|\btees?\b|tank top|\btops?\b/],
   ['hat', /\bhats?\b|\bcaps?\b|beanie|bucket hat|59fifty/],
   ['jewelry', /jewel|necklace|bracelet|earrings?|\brings?\b|pendant|charm/],
+  // A whole department ("women's clothing") rather than one kind of item.
+  ['apparel', /\b(clothing|clothes|apparel|outfits?|fashion)\b/],
 ];
 
 export function categoryOf(text: string): DemoCategory {
@@ -64,14 +66,15 @@ export function categoryOf(text: string): DemoCategory {
 const NOUN: Record<DemoCategory, string> = {
   bag: 'Shoulder Bag', tote: 'Tote', backpack: 'Backpack', wallet: 'Wallet', sneaker: 'Sneakers', boot: 'Boots',
   heel: 'Heels', watch: 'Watch', sunglasses: 'Sunglasses', jeans: 'Jeans', tee: 'T-Shirt', shirt: 'Shirt',
-  dress: 'Dress', jacket: 'Jacket', hoodie: 'Hoodie', hat: 'Cap', jewelry: 'Necklace', other: '',
+  dress: 'Dress', jacket: 'Jacket', hoodie: 'Hoodie', hat: 'Cap', jewelry: 'Necklace', apparel: '', other: '',
 };
 
 /** Typical US price range for the category, in dollars. */
 const BASE_USD: Record<DemoCategory, [number, number]> = {
   bag: [140, 420], tote: [110, 360], backpack: [60, 220], wallet: [45, 180], sneaker: [75, 170], boot: [130, 260],
   heel: [70, 190], watch: [110, 420], sunglasses: [130, 230], jeans: [50, 110], tee: [20, 55], shirt: [45, 120],
-  dress: [70, 210], jacket: [110, 340], hoodie: [50, 110], hat: [22, 48], jewelry: [55, 220], other: [40, 180],
+  dress: [70, 210], jacket: [110, 340], hoodie: [50, 110], hat: [22, 48], jewelry: [55, 220], apparel: [35, 160],
+  other: [40, 180],
 };
 
 const LUXURY = /(gucci|prada|saint laurent|ysl|balenciaga|bottega|burberry|fendi|dior|celine|loewe|valentino|givenchy|versace|louis vuitton|chanel|hermes|moncler|jimmy choo|louboutin|golden goose|mcqueen|off white|miu miu|jacquemus)/;
@@ -95,6 +98,11 @@ const SIMILAR: Record<DemoCategory, string[]> = {
   hoodie: ['Champion|Reverse Weave Hoodie', 'Nike|Sportswear Club Fleece Hoodie', 'Carhartt|Midweight Hooded Sweatshirt', 'Adidas|Trefoil Essentials Hoodie', 'Lululemon|Scuba Oversized Hoodie'],
   hat: ['New Era|59FIFTY Fitted Cap', 'Carhartt|Acrylic Watch Hat', 'Nike|Heritage86 Cap', 'Kangol|Bermuda Casual Bucket Hat'],
   jewelry: ['Pandora|Moments Snake Chain Bracelet', 'Swarovski|Millenia Necklace', 'Kendra Scott|Elisa Pendant Necklace', 'Mejuri|Bold Hoop Earrings'],
+  apparel: [
+    "Free People|Adella Women's Slip Dress", "Madewell|Women's Perfect Vintage Jean", "Reformation|Women's Juliette Linen Midi Dress",
+    "Abercrombie & Fitch|Women's Cropped Cable Sweater", "Zara|Women's Faux Leather Biker Jacket", "Lululemon|Women's Align High-Rise Pants",
+    "Banana Republic|Women's Silk Button-Up Shirt", "Aritzia|Women's Super Puff Jacket", "Ralph Lauren|Women's Cable-Knit Cotton Cardigan",
+  ],
   other: ['Coach|Willow Shoulder Bag', "Levi's|501 Original Fit Jeans", 'Ray-Ban|Original Wayfarer RB2140', "Nike|Air Force 1 '07", 'Fossil|Grant Chronograph Watch'],
 };
 
@@ -104,7 +112,21 @@ const COLORS: Record<DemoCategory, string[]> = {
   boot: ['Black', 'Wheat', 'Chestnut'], heel: ['Black', 'Nude', 'Red'], watch: ['Silver', 'Gold', 'Black'],
   sunglasses: ['Black', 'Tortoise', 'Gold/Green'], jeans: ['Dark Wash', 'Light Wash', 'Black'], tee: ['White', 'Black', 'Heather Grey'],
   shirt: ['White', 'Light Blue', 'Pink'], dress: ['Black', 'Sage', 'Ivory'], jacket: ['Black', 'Olive', 'Tan'],
-  hoodie: ['Grey', 'Black', 'Navy'], hat: ['Black', 'Navy', 'Khaki'], jewelry: ['Silver', 'Gold', 'Rose Gold'], other: ['Black', 'Tan', 'White'],
+  hoodie: ['Grey', 'Black', 'Navy'], hat: ['Black', 'Navy', 'Khaki'], jewelry: ['Silver', 'Gold', 'Rose Gold'],
+  apparel: ['Black', 'Navy', 'Cream'], other: ['Black', 'Tan', 'White'],
+};
+
+/** Department searches for men and kids get their own mix of clothes. */
+const APPAREL_FOR: Record<'men' | 'kids', string[]> = {
+  men: [
+    "Ralph Lauren|Men's Custom Fit Oxford Shirt", "Levi's|Men's 511 Slim Fit Jeans", "Patagonia|Men's Down Sweater Jacket",
+    "Carhartt|Men's Loose Fit Pocket T-Shirt", "J.Crew|Men's Cotton Crewneck Sweater", "Nike|Men's Sportswear Club Fleece Hoodie",
+    "Banana Republic|Men's Slim Chino Pant", "Barbour|Men's Beaufort Wax Jacket",
+  ],
+  kids: [
+    "Carter's|Kids' Fleece Hoodie", "Gap|Kids' Organic Cotton T-Shirt", "Nike|Big Kids' Club Fleece Joggers",
+    "Old Navy|Girls' Tiered Dress", "Columbia|Boys' Puffer Jacket", "Levi's|Boys' 511 Slim Jeans", "Hanna Andersson|Kids' Pajama Set",
+  ],
 };
 
 // ---------- stores ----------
@@ -257,12 +279,24 @@ export function demoCatalog(query: string, country: CountryCode): DemoProduct[] 
   }
 
   const colors = [...COLORS[category]].sort(() => r() - 0.5);
-  const specs: { title: string; brand?: string; factor: number; exact: boolean }[] = [
-    { title: `${mainTitle} in ${colors[0]}`, brand, factor: 1, exact: true },
-    { title: `${mainTitle} in ${colors[1]}`, brand, factor: between(r, 0.98, 1.06), exact: true },
-  ];
-  if (colors[2]) specs.push({ title: `${mainTitle} in ${colors[2]}`, brand, factor: between(r, 0.94, 1.04), exact: true });
-  const similar = SIMILAR[category].filter((s) => !normalize(s).includes(brandText) || !brand).sort(() => r() - 0.5).slice(0, 5);
+  const specs: { title: string; brand?: string; factor: number; exact: boolean }[] = [];
+  // A department search ("men's clothing") has no single item to show variants of.
+  if (category !== 'apparel') {
+    specs.push({ title: `${mainTitle} in ${colors[0]}`, brand, factor: 1, exact: true });
+    specs.push({ title: `${mainTitle} in ${colors[1]}`, brand, factor: between(r, 0.98, 1.06), exact: true });
+    if (colors[2]) specs.push({ title: `${mainTitle} in ${colors[2]}`, brand, factor: between(r, 0.94, 1.04), exact: true });
+  }
+  const nq = ` ${normalize(q)} `;
+  const pool =
+    category === 'apparel' && /\b(kids?|boys|girls|baby|toddlers?)\b/.test(nq)
+      ? APPAREL_FOR.kids
+      : category === 'apparel' && /\b(men|mens|man)\b/.test(nq)
+        ? APPAREL_FOR.men
+        : SIMILAR[category];
+  const similar = pool
+    .filter((s) => !normalize(s).includes(brandText) || !brand)
+    .sort(() => r() - 0.5)
+    .slice(0, category === 'apparel' ? 8 : 5);
   for (const s of similar) {
     const [b, model] = s.split('|');
     const sMult = LUXURY.test(normalize(b)) ? 6 : PREMIUM.test(normalize(b)) ? 1.4 : 1;

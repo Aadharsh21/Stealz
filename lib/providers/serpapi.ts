@@ -226,12 +226,17 @@ export function parseImmersiveProduct(pr: Json): ProviderProductResult {
 export async function searchGoogleShopping(
   query: string,
   loc: ResolvedLocation,
-  opts: { onSale?: boolean } = {},
+  opts: { onSale?: boolean; price?: { min: number; max: number } } = {},
 ): Promise<ProviderSearchResult> {
   const cfg = COUNTRIES[loc.country];
   const base: Record<string, string> = { engine: 'google_shopping', q: query, gl: cfg.gl, hl: cfg.hl, google_domain: cfg.googleDomain };
   // Google's own "On sale" filter: only products the store marks as reduced.
   if (opts.onSale) base.on_sale = 'true';
+  // Google's price filter, so all ~40 results land in the range instead of a few.
+  if (opts.price) {
+    base.min_price = String(opts.price.min);
+    base.max_price = String(opts.price.max);
+  }
   const notices: string[] = [];
   const googleLocation = await googleLocationFor(loc);
   let data: Json;

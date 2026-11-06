@@ -7,7 +7,9 @@ import type { SearchResponse } from '@/lib/types';
 import { ApiClientError, getJson, locationParams, timeAgo } from '@/lib/client';
 import { COUNTRIES } from '@/lib/countries';
 import type { ResultFilters, SortKey } from '@/lib/filters';
-import { DEFAULT_FILTERS, SORT_LABELS, activeFilterCount, cheapestListing, filterGroups, filterListings } from '@/lib/filters';
+import {
+  DEFAULT_FILTERS, SORT_LABELS, activeFilterCount, buildFacets, cheapestListing, filterGroups, filterListings,
+} from '@/lib/filters';
 import { addRecentSearch } from '@/lib/storage';
 import { popularSearches } from '@/lib/suggestions';
 import { AlertIcon, GridIcon, InfoIcon, ListIcon, SlidersIcon, TagIcon, XIcon } from './icons';
@@ -100,6 +102,7 @@ export function ResultsView() {
   const cheapest = useMemo(() => cheapestListing(groups, data?.summary.scope), [groups, data?.summary.scope]);
   const filterCount = activeFilterCount(filters);
   const saleCount = useMemo(() => (data ? data.groups.filter((g) => g.onSale).length : 0), [data]);
+  const facets = useMemo(() => (data ? buildFacets(data.groups, data.currency) : null), [data]);
 
   if (!query) {
     return (
@@ -111,9 +114,15 @@ export function ResultsView() {
   }
 
   const hiddenParts = data
-    ? [data.hiddenUsed > 0 ? `${data.hiddenUsed} used or pre-owned` : '', data.hiddenFakes > 0 ? `${data.hiddenFakes} likely fake` : ''].filter(Boolean)
+    ? [
+        data.hiddenUsed > 0 ? `${data.hiddenUsed} used or pre-owned` : '',
+        data.hiddenFakes > 0 ? `${data.hiddenFakes} likely fake` : '',
+        data.hiddenOffTopic ? `${data.hiddenOffTopic} unrelated` : '',
+      ].filter(Boolean)
     : [];
-  const hiddenNote = hiddenParts.length ? `${hiddenParts.join(' and ')} listings hidden` : '';
+  const hiddenNote = hiddenParts.length
+    ? `${hiddenParts.length > 1 ? `${hiddenParts.slice(0, -1).join(', ')} and ${hiddenParts[hiddenParts.length - 1]}` : hiddenParts[0]} listings hidden`
+    : '';
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:px-6">
@@ -202,7 +211,9 @@ export function ResultsView() {
               <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[232px_1fr]">
                 <aside className="hidden lg:block" aria-label="Filters">
                   <div className="sticky top-24">
-                    <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} />
+                    {facets && (
+                      <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} facets={facets} currency={data.currency} />
+                    )}
                   </div>
                 </aside>
 
@@ -261,6 +272,32 @@ export function ResultsView() {
                     </div>
                   </div>
 
+                  {facets && facets.categories.length > 1 && (
+                    <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:px-0" role="group" aria-label="Category">
+                      {facets.categories.map((c) => {
+                        const on = filters.categories.includes(c.value);
+                        return (
+                          <button
+                            key={c.value}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() =>
+                              setFilters((f) => ({
+                                ...f,
+                                categories: on ? f.categories.filter((x) => x !== c.value) : [...f.categories, c.value],
+                              }))
+                            }
+                            className={`inline-flex h-8 shrink-0 items-center rounded-full px-3 text-[13px] font-semibold ring-1 transition-colors ${
+                              on ? 'bg-ink text-paper ring-ink' : 'text-ink-soft ring-line-strong hover:bg-canvas'
+                            }`}
+                          >
+                            {c.value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {(view === 'products' ? groups.length : listings.length) === 0 ? (
                     <div className="mt-10">
                       <p className="font-semibold">Nothing matches these filters.</p>
@@ -301,7 +338,9 @@ export function ResultsView() {
                       <XIcon />
                     </button>
                   </div>
-                  <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} currency={data.currency} />
+                  {facets && (
+                    <ResultsFilters filters={filters} onChange={setFilters} stores={data.stores} facets={facets} currency={data.currency} />
+                  )}
                   <button type="button" onClick={() => filterDialog.current?.close()} className={`${buttonClass('primary', 'lg')} mt-6 w-full`}>
                     Show {view === 'products' ? groups.length : listings.length} results
                   </button>

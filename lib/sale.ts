@@ -1,6 +1,7 @@
 // "On sale" page data: one Google Shopping search per tab and country with Google's "On sale"
 // filter. Results are reused for a week and only refreshed when someone opens that tab, so the
-// page costs a handful of searches a month.
+// page costs a handful of searches a month. Each tab keeps to its shelf (shelves.ts): the right
+// kind of item, for the right people, at a price people actually pay.
 
 import type { CountryCode } from './types';
 import { SALE_TABS } from './sale-tabs';
@@ -10,6 +11,7 @@ import { cacheGet, cacheSet } from './cache';
 import { COUNTRIES } from './countries';
 import { toAppError } from './errors';
 import { runSearch } from './search';
+import { shelfFilter, shelfKey, shelfPrice } from './shelves';
 import { hash32 } from './text';
 
 const FRESH_MS = 7 * 86400 * 1000;
@@ -21,13 +23,21 @@ interface StoredSale {
 }
 
 function saleKey(country: CountryCode, def: (typeof SALE_TABS)[number]): string {
-  return `sale:v1:${country}:${def.id}:${hash32(def.query)}`;
+  return `sale:v1:${country}:${def.id}:${hash32(shelfKey(def.query, def.id, country))}`;
+}
+
+/** Saved sale items, re-checked against the tab's shelf. */
+async function storedSale(country: CountryCode, def: (typeof SALE_TABS)[number]): Promise<StoredSale | null> {
+  const saved = await cacheGet<StoredSale>(saleKey(country, def));
+  if (!saved) return null;
+  const fits = shelfFilter(def.id, country);
+  return { ...saved, items: saved.items.filter((i) => fits(i.title, i.price)) };
 }
 
 export async function getSale(tab: SaleTab, country: CountryCode): Promise<SaleResponse> {
   const def = SALE_TABS.find((t) => t.id === tab) ?? SALE_TABS[0];
   const key = saleKey(country, def);
-  const stored = await cacheGet<StoredSale>(key);
+  const stored = await storedSale(country, def);
   const fresh = stored && Date.now() - Date.parse(stored.checkedAt) < FRESH_MS;
   if (stored && fresh) return { tab, query: def.query, ...stored };
 
@@ -37,10 +47,16 @@ export async function getSale(tab: SaleTab, country: CountryCode): Promise<SaleR
   await cacheSet(lockKey, true, 120);
 
   try {
-    const { response, background } = await runSearch({ query: def.query, location: { country, source: 'default' }, ip: 'sale-page', onSale: true });
+    const { response, background } = await runSearch({
+      query: def.query,
+      location: { country, source: 'default' },
+      ip: 'sale-page',
+      onSale: true,
+      price: shelfPrice(def.id, country),
+    });
     // Saves price history and any promo codes from this search.
     await background?.().catch((err) => console.error('[sale] background work failed', err));
-    const items = chooseSaleItems(response.groups, COUNTRIES[country].currency);
+    const items = chooseSaleItems(response.groups, COUNTRIES[country].currency, { fits: shelfFilter(def.id, country) });
     if (items.length >= 4 && !response.demo) {
       const next: StoredSale = { items, checkedAt: response.fetchedAt };
       await cacheSet(key, next, KEEP_SECONDS);
@@ -60,7 +76,7 @@ export async function getStoreSales(country: CountryCode): Promise<{ stores: Sto
   const dates: string[] = [];
   await Promise.all(
     SALE_TABS.map(async (def) => {
-      const stored = await cacheGet<StoredSale>(saleKey(country, def));
+      const stored = await storedSale(country, def);
       if (!stored) return;
       byTab[def.id] = stored.items;
       dates.push(stored.checkedAt);
