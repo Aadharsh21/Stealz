@@ -10,6 +10,7 @@ import {
 import { finalizeOffer } from './offer';
 import type { OfferContext } from './offer';
 import { encodeRef } from './ref';
+import { categorize, departmentOf } from './category';
 import { markLuxuryFloors, markPriceOutliers } from './deal';
 import { cleanLink } from './links';
 import { cheapestOf, explainPick, fastestOf, rankOffers } from './scoring';
@@ -98,6 +99,7 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
     if (seen.has(dedupe)) continue;
     seen.add(dedupe);
     const key = productKey(loc.country, item.title, item.productId);
+    const category = categorize(item.title);
     const ref: ProductRef = {
       v: 1,
       p: item.source,
@@ -116,6 +118,9 @@ export function buildListings(items: ProviderItem[], query: string, loc: Resolve
       ref: encodeRef(ref),
       multipleSources: item.multipleSources,
       googleLink: cleanLink(item.googleLink),
+      category: category?.type,
+      categoryGroup: category?.group,
+      department: departmentOf(item.title),
     });
   }
   return { listings, hiddenUsed, hiddenFakes };

@@ -3,8 +3,15 @@
 import type { CurrencyCode, ProductGroup } from './types';
 import type { PickItem } from './pick-tabs';
 
-/** Up to 10 eye-catching products: has a photo, a mix of brands, stores before marketplaces. */
-export function choosePicks(groups: ProductGroup[], currency: CurrencyCode): PickItem[] {
+/**
+ * Up to 10 eye-catching products: has a photo, a mix of brands, stores before marketplaces.
+ * `fits` keeps the tab on topic (see shelves.ts), judged on the title and the price shown.
+ */
+export function choosePicks(
+  groups: ProductGroup[],
+  currency: CurrencyCode,
+  fits?: (title: string, price: number) => boolean,
+): PickItem[] {
   const perBrand = new Map<string, number>();
   const picks: PickItem[] = [];
   const ranked = [...groups].sort((a, b) => {
@@ -20,6 +27,7 @@ export function choosePicks(groups: ProductGroup[], currency: CurrencyCode): Pic
     const brandKey = (g.brand ?? '').toLowerCase();
     if (brandKey && (perBrand.get(brandKey) ?? 0) >= 2) continue;
     const cheapest = [...listings].sort((a, b) => a.price - b.price)[0];
+    if (fits && !fits(g.title, cheapest.price)) continue;
     picks.push({
       title: g.title,
       brand: g.brand,

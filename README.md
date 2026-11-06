@@ -107,11 +107,12 @@ and **other colors**.
 | 🎯 **Deal score** | 0 to 100 with a plain verdict: buy now or wait. 80+ is a great deal. |
 | 🚩 **Fake discount check** | Flags "was" prices that no other store actually charges. |
 | 🕵️ **Originals only** | Copy shops, fake-looking listings, used, refurbished, resale and rentals are hidden, and it tells you how many. |
+| 🗂️ **Store-style filters** | Category (Dresses, Jeans, Sneakers…), department, brand and price ranges worked out from the results, like a department store's filters. Books, perfume and other unrelated items are left out of fashion searches. |
 | 🎨 **Color check** | Calls out when a cheaper listing is actually a different color. |
 | 🏪 **Seller signals** | Brand stores, marketplace sellers, store ratings and return policies, so a sketchy cheap listing doesn't win by default. |
 | 📉 **Price history** | A chart of the lowest total per day, with the lowest, average and highest prices. |
 | 🔔 **Price-drop alerts** | Email when it drops below your target. No account, one-click confirm and unsubscribe. |
-| 🏷️ **On sale** | Real markdowns on designer clothes, bags and sneakers, by category, per country. |
+| 🏷️ **On sale** | Real markdowns on designer clothes, bags and sneakers, by category, per country. Clothing tabs show only clothing for that department, at everyday prices. |
 | 🎟️ **Coupons and offers** | Promo codes stores publish, which stores have sales on, and more stores to check. |
 | 🛍️ **More stores** | One-tap links to search the same item on stores Google doesn't list, like Trendyol in the UAE or Selfridges in the UK. |
 | ⭐ **Watchlist and sharing** | Save items on your device and share a comparison with a link. |
@@ -233,13 +234,15 @@ stealz/
 ├── lib/                 the engine
 │   ├── providers/       SerpApi, eBay and sample-data sources
 │   ├── normalize.ts     groups the same item across stores, flags fake shops
+│   ├── category.ts      what an item is (Dresses, Sneakers…) and who it's for, from its title
+│   ├── shelves.ts       what each home and sale tab shows, with price ranges per country
 │   ├── tax.ts           US sales tax by state, clothing exemptions
 │   ├── delivery.ts      turns "Arrives Nov 3–5" into dates
 │   ├── deal.ts          deal score, inflated discounts, color checks
 │   ├── limits.ts        rate limits and the live-search budget
 │   └── cache.ts  db.ts  Postgres cache; tables created on first run
 ├── extension/           Chrome extension: popup + a page reader that runs only on click
-├── tests/               40 tests: pricing, tax, delivery, trust filters, deals, UK, extension lookups
+├── tests/               47 tests: pricing, tax, delivery, trust filters, deals, categories, UK, extension lookups
 └── scripts/             packages the extension download
 ```
 
@@ -257,7 +260,7 @@ git clone https://github.com/Aadharsh21/Stealz.git
 cd Stealz
 npm install
 npm run dev        # http://localhost:3000, sample data until you add keys
-npm test           # 40 tests
+npm test           # 47 tests
 ```
 
 <details>

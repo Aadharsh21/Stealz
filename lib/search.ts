@@ -17,6 +17,7 @@ import type { ProviderItem } from './providers/types';
 import { wantedColorText } from './colors';
 import { markColorMismatches } from './deal';
 import { isFlagged } from './scoring';
+import { categorize, isOffTopic } from './category';
 import { normalize } from './text';
 import { couponsFromItems } from './coupon-codes';
 import { recordCoupons } from './coupons';
@@ -35,8 +36,15 @@ export function cleanQuery(input: string): string {
   return input.replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
 }
 
-export function searchCacheKey(query: string, loc: UserLocation, onSale = false): string {
-  return `search:v2:${loc.country}:${locationKey(loc)}:${normalize(query)}${onSale ? ':sale' : ''}`;
+/** Item price range for a search, in the shopper's currency. */
+export interface PriceRange {
+  min: number;
+  max: number;
+}
+
+export function searchCacheKey(query: string, loc: UserLocation, onSale = false, price?: PriceRange): string {
+  const range = price ? `:p${price.min}-${price.max}` : '';
+  return `search:v2:${loc.country}:${locationKey(loc)}:${normalize(query)}${onSale ? ':sale' : ''}${range}`;
 }
 
 /** Per-visitor rate limit for anything that costs a live API call. */
@@ -54,17 +62,20 @@ export async function getSearchItems(
   query: string,
   loc: ResolvedLocation,
   ip: string,
-  opts: { cachedOnly?: boolean; now?: Date; onSale?: boolean } = {},
+  opts: { cachedOnly?: boolean; now?: Date; onSale?: boolean; price?: PriceRange } = {},
 ): Promise<RawSearch | null> {
   const mode = dataMode();
   if (mode === 'none') throw new AppError('No shopping data source is configured yet.', 500, 'server');
   if (mode === 'demo') {
     const r = demoSearch(query, loc, opts.now);
-    const items = opts.onSale ? r.items.filter((i) => i.originalPrice != null) : r.items;
+    const { price } = opts;
+    const items = r.items.filter(
+      (i) => (!opts.onSale || i.originalPrice != null) && (!price || (i.price >= price.min && i.price <= price.max)),
+    );
     return { items, sources: r.sources, notices: r.notices, demo: true, fetchedAt: new Date().toISOString(), cached: false };
   }
 
-  const key = searchCacheKey(query, loc, opts.onSale);
+  const key = searchCacheKey(query, loc, opts.onSale, opts.price);
   const cached = await cacheGet<RawSearch>(key);
   if (cached) return { ...cached, cached: true };
   if (opts.cachedOnly) return null;
@@ -78,7 +89,7 @@ export async function getSearchItems(
   if (useGoogle) await takeLiveCredit();
 
   const [google, ebay] = await Promise.allSettled([
-    useGoogle ? searchGoogleShopping(query, loc, { onSale: opts.onSale }) : Promise.resolve(null),
+    useGoogle ? searchGoogleShopping(query, loc, { onSale: opts.onSale, price: opts.price }) : Promise.resolve(null),
     useEbay ? searchEbay(query, loc) : Promise.resolve([] as ProviderItem[]),
   ]);
 
@@ -115,6 +126,8 @@ export interface SearchInput {
   now?: Date;
   /** Only items stores have marked down (Google's "On sale" filter). */
   onSale?: boolean;
+  /** Only items priced in this range (Google's price filter). */
+  price?: PriceRange;
 }
 
 export interface SearchOutcome {
@@ -128,14 +141,19 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
   if (query.length < 2) throw new AppError('Type at least 2 characters to search.', 400, 'bad_request');
   const now = input.now ?? new Date();
   const loc = await resolveLocation(input.location, input.tz);
-  const raw = (await getSearchItems(query, loc, input.ip, { now, onSale: input.onSale })) as RawSearch;
+  const raw = (await getSearchItems(query, loc, input.ip, { now, onSale: input.onSale, price: input.price })) as RawSearch;
   const built = buildListings(raw.items, query, loc, now);
   // Originals only: listings that look fake (copy shops, fake-shop domains, prices no genuine
   // item sells for) are left out entirely, not just labelled.
   const checked = flagSuspiciousListings(built.listings);
-  const listings = markColorMismatches(checked.filter((l) => !isFlagged(l)), wantedColorText(query));
+  const genuine = checked.filter((l) => !isFlagged(l));
+  // Like a store's search, a fashion search only shows fashion: no books, candles or perfume.
+  const wanted = categorize(query)?.group;
+  const onTopic = genuine.filter((l) => !isOffTopic(l.categoryGroup, wanted));
+  const listings = markColorMismatches(onTopic, wantedColorText(query));
   const hiddenUsed = built.hiddenUsed;
-  const hiddenFakes = built.hiddenFakes + (checked.length - listings.length);
+  const hiddenFakes = built.hiddenFakes + (checked.length - genuine.length);
+  const hiddenOffTopic = genuine.length - onTopic.length;
   const groups = groupListings(listings);
   const response: SearchResponse = {
     query,
@@ -152,6 +170,7 @@ export async function runSearch(input: SearchInput): Promise<SearchOutcome> {
     notices: raw.notices,
     hiddenUsed,
     hiddenFakes,
+    hiddenOffTopic,
   };
   const background =
     raw.cached || raw.demo
